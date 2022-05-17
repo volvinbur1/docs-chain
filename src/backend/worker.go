@@ -2,12 +2,12 @@ package backend
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 )
 
 const (
-	mainPageEndpoint    = "/main"
-	uploadPaperEndpoint = "/upload-paper"
+	paperUploadPageEndpoint = "/paper-upload"
 )
 
 type Worker struct {
@@ -15,15 +15,19 @@ type Worker struct {
 
 func NewWorker() *Worker {
 	worker := &Worker{}
-	http.Handle("/", http.FileServer(http.Dir("./web/static")))
-	http.HandleFunc(uploadPaperEndpoint, worker.HandlePaperUploadRequest)
+	http.Handle("/", http.FileServer(http.Dir("web/static")))
+	http.HandleFunc(paperUploadPageEndpoint, worker.HandlePaperUploadRequest)
 	return worker
 }
 
 func (w *Worker) HandlePaperUploadRequest(writer http.ResponseWriter, request *http.Request) {
-	err := request.ParseForm()
-	if err != nil {
-		fmt.Fprint(writer, err)
+	if request.Method == http.MethodGet {
+		http.ServeFile(writer, request, "web/static/paper_upload_page.html")
+	} else {
+		err := request.ParseForm()
+		if err != nil {
+			log.Print(fmt.Fprint(writer, err))
+		}
 	}
 }
 
