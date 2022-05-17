@@ -5,13 +5,13 @@
     <title>Upload a paper</title>
 </head>
 <body>
-<form action="/paper-upload" method="post">
+<form action="/paper-upload" enctype="multipart/form-data" method="post">
     <label for="uploaderName">Enter your name</label><input type="text" id="uploaderName" name="uploaderName">
     <br>
     <label for="paperTopic">Enter your paper topic</label><input type="text" id="paperTopic" name="paperTopic">
     <br>
     <label>Upload your paper file</label>
-    <input type="file" id="paperFile" name="paperFile">
+    <input type="file" id="paperFile" name="paperFile" accept="application/pdf" required>
     <br>
     <input type="submit" value="Upload">
 </form>

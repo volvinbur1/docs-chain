@@ -1,13 +1,18 @@
 package backend
 
 import (
-	"fmt"
-	"log"
+	"io"
 	"net/http"
+	"os"
+	"path/filepath"
 )
 
 const (
 	paperUploadPageEndpoint = "/paper-upload"
+)
+
+const (
+	paperFileFormKey = "paperFile"
 )
 
 type Worker struct {
@@ -24,9 +29,32 @@ func (w *Worker) HandlePaperUploadRequest(writer http.ResponseWriter, request *h
 	if request.Method == http.MethodGet {
 		http.ServeFile(writer, request, "web/static/paper_upload_page.html")
 	} else {
-		err := request.ParseForm()
+		if err := request.ParseMultipartForm(32 << 20); err != nil {
+			http.Error(writer, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		requestFile, header, err := request.FormFile(paperFileFormKey)
 		if err != nil {
-			log.Print(fmt.Fprint(writer, err))
+			http.Error(writer, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		defer requestFile.Close()
+
+		fileStoragePath := filepath.Join("bin", "storage", "paper")
+		if err = os.MkdirAll(fileStoragePath, os.ModePerm); err != nil {
+			http.Error(writer, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		localFile, err := os.OpenFile(filepath.Join(fileStoragePath, header.Filename), os.O_WRONLY|os.O_CREATE, 0666)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		defer localFile.Close()
+		_, err = io.Copy(localFile, requestFile)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusInternalServerError)
+			return
 		}
 	}
 }
