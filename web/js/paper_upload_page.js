@@ -125,7 +125,7 @@ window.addEventListener("load", function (){
         await new Promise(r => setTimeout(r, 2000));
 
         let http = new XMLHttpRequest();
-        http.open('GET', '/paper-upload/status?sessionId='+sessionInProgressId, true);
+        http.open('GET', '/paper-upload/status?paperId='+sessionInProgressId, true);
         http.onreadystatechange = function() {
             if ( http.readyState === XMLHttpRequest.DONE ) {
                 if ( http.status === 200 ) {

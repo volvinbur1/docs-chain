@@ -6,6 +6,8 @@ import (
 	"log"
 )
 
+const sizeOfProcessingQueue = 1024
+
 type Worker struct {
 	dbManager *storage.DatabaseManager
 	centralCh chan common.UploadedPaper
@@ -14,7 +16,7 @@ type Worker struct {
 func NewWorker() *Worker {
 	return &Worker{
 		dbManager: storage.NewDatabaseManager(),
-		centralCh: make(chan common.UploadedPaper),
+		centralCh: make(chan common.UploadedPaper, sizeOfProcessingQueue),
 	}
 }
 
@@ -28,10 +30,10 @@ func (w *Worker) EnterMainLoop() {
 	}
 }
 
-func (w *Worker) GetSessionStatus(sessionId string) common.ProcessingSession {
-	return common.ProcessingSession{
+func (w *Worker) GetSessionStatus(sessionId string) common.PaperProcessResult {
+	return common.PaperProcessResult{
 		Id:     sessionId,
-		Status: common.SuccessSessionStatus,
+		Status: common.SuccessStatus,
 		NFT:    "test_nft",
 	}
 }
@@ -41,6 +43,7 @@ func (w *Worker) Stop() {
 	w.dbManager.Disconnect()
 }
 
-func (w *Worker) ProcessNewPaper(paper common.UploadedPaper) {
-	w.centralCh <- paper
+func (w *Worker) AddNewPaperToQueue(newPaper common.UploadedPaper) {
+	w.centralCh <- newPaper
+	log.Printf("New paper added to processing queue. Paper id: %s", newPaper.Id)
 }

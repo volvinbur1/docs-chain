@@ -10,12 +10,12 @@ type UploadedPaper struct {
 }
 
 const (
-	UnknownSessionStatus    = "unknown"
-	InProgressSessionStatus = "inProgress"
-	SuccessSessionStatus    = "success"
+	UnknownStatus    = "unknown"
+	InProgressStatus = "inProgress"
+	SuccessStatus    = "success"
 )
 
-type ProcessingSession struct {
+type PaperProcessResult struct {
 	Id     string `json:"id"`
 	Status string `json:"status"`
 	NFT    string `json:"NFT"`
