@@ -33,7 +33,7 @@ func (w *Worker) EnterMainLoop() {
 func (w *Worker) GetSessionStatus(sessionId string) common.PaperProcessResult {
 	return common.PaperProcessResult{
 		Id:     sessionId,
-		Status: common.SuccessStatus,
+		Status: common.InProgressStatus,
 		NFT:    "test_nft",
 	}
 }
