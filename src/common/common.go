@@ -10,9 +10,10 @@ type UploadedPaper struct {
 }
 
 const (
-	UnknownStatus    = "unknown"
-	InProgressStatus = "inProgress"
-	SuccessStatus    = "success"
+	UnknownStatus              = "unknown"
+	IsReadyForProcessingStatus = "isReadyForProcessing"
+	InProgressStatus           = "inProgress"
+	SuccessStatus              = "success"
 )
 
 type PaperProcessResult struct {

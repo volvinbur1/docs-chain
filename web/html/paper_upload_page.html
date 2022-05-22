@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="UTF-8">
     <title>Upload a paper</title>
-    <link rel="stylesheet" href="../css/paper_upload_page.css">
+    <link rel="stylesheet" href="../static/css/paper_upload_page.css">
 </head>
 <body>
-<div class="paperUploadView">
+<div id="paperUploadView" class="paperUploadView">
     <form id="uploadForm" enctype="multipart/form-data" method="post">
         <p>
             <label for="uploaderName">Enter your name:</label>
@@ -28,7 +28,7 @@
     </form>
 </div>
 
-<div class="loadingView" style="display: none;">
+<div id="loadingView" class="loadingView" style="display: none;">
     <div class="loadingIndicator"></div>
     Please wait while the server finishes processing.
     <br>
@@ -37,14 +37,17 @@
     <b>Do not close this tab</b>
 </div>
 
-<div class="uploadResult" style="display: none;">
+<div id="uploadResult" class="uploadResult" style="display: none;">
     <p>
-        The paper was processed correctly. The NFT of your work is bellow.
+        The paper processing finished
+        <span style="color: #40ff2f;">successfully</span>.
+        <br>
+        The NFT of your work is bellow.
     </p>
-    <div class="resultingNFW">no-data</div>
+    <div id="resultingNFW" class="resultingNFW">no-data</div>
 </div>
 
-<script src="../js/paper_upload_page.js"></script>
+<script src="../static/js/paper_upload_page.js"></script>
 
 </body>
 </html>

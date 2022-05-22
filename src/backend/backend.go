@@ -41,7 +41,8 @@ type WebUIProcessor struct {
 func NewWebUIProcessor(centralWorker *central.Worker) *WebUIProcessor {
 	processor := &WebUIProcessor{centralWorker: centralWorker}
 
-	http.Handle("/", http.FileServer(http.Dir("web/static")))
+	http.Handle("/", http.FileServer(http.Dir("web/html")))
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("web/static"))))
 	http.HandleFunc(paperUploadPageEndpoint, processor.HandlePaperUploadRequest)
 	http.HandleFunc(paperUploadStatusEndpoint, processor.HandlePaperUploadStatus)
 	return processor
@@ -50,7 +51,7 @@ func NewWebUIProcessor(centralWorker *central.Worker) *WebUIProcessor {
 func (w *WebUIProcessor) HandlePaperUploadRequest(writer http.ResponseWriter, request *http.Request) {
 	switch request.Method {
 	case http.MethodGet:
-		http.ServeFile(writer, request, "web/static/paper_upload_page.html")
+		http.ServeFile(writer, request, "web/html/paper_upload_page.html")
 	case http.MethodPost:
 		newPaper, err := w.parsePaperUploadRequest(request)
 		if err != nil {
@@ -58,7 +59,8 @@ func (w *WebUIProcessor) HandlePaperUploadRequest(writer http.ResponseWriter, re
 			http.Error(writer, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		w.addPaperToProcessingQueue(newPaper, writer)
+		w.centralWorker.AddNewPaperToQueue(newPaper)
+		w.checkPaperStatus(newPaper.Id, writer)
 	default:
 		http.Error(writer, fmt.Sprintf("Http is method %s is not supported", request.Method), http.StatusNotImplemented)
 	}
@@ -69,17 +71,7 @@ func (w *WebUIProcessor) HandlePaperUploadStatus(writer http.ResponseWriter, req
 	case http.MethodGet:
 		paperId := request.URL.Query().Get(paperIdKey)
 		log.Println("New get paper status request. Paper id:", paperId)
-		responseBody, responseStatus := w.checkPaperStatus(paperId, writer)
-		if responseStatus%100 == 5 {
-			return
-		}
-
-		_, err := writer.Write(responseBody)
-		if err != nil {
-			errStr := fmt.Sprintf("writing to http response writer failed. Error: %s", err)
-			log.Println(errStr)
-			http.Error(writer, errStr, http.StatusInternalServerError)
-		}
+		w.checkPaperStatus(paperId, writer)
 	default:
 		http.Error(writer, fmt.Sprintf("Http is method %s is not supported", request.Method), http.StatusNotImplemented)
 	}
@@ -107,45 +99,34 @@ func (w *WebUIProcessor) parsePaperUploadRequest(request *http.Request) (common.
 	return uploadedPaper, err
 }
 
-func (w *WebUIProcessor) addPaperToProcessingQueue(newPaper common.UploadedPaper, writer http.ResponseWriter) {
-	w.centralWorker.AddNewPaperToQueue(newPaper)
-
-	responseBody, responseStatus := w.checkPaperStatus(newPaper.Id, writer)
-	if responseStatus%100 == 5 {
+func (w *WebUIProcessor) checkPaperStatus(paperId string, writer http.ResponseWriter) {
+	paperStatus := w.centralWorker.GetSessionStatus(paperId)
+	if paperStatus.Status == common.UnknownStatus {
+		writer.WriteHeader(http.StatusBadRequest)
+		errStr := fmt.Sprintf("Paper id %s is unkown.", paperStatus.Id)
+		log.Println(errStr)
+		if _, err := writer.Write([]byte(errStr)); err != nil {
+			log.Println("Writing to http response writer failed. Error:", err)
+		}
 		return
 	}
 
-	if responseStatus != http.StatusOK {
-		writer.WriteHeader(http.StatusAccepted)
-	}
-	_, err := writer.Write(responseBody)
-	if err != nil {
-		errStr := fmt.Sprintf("writing to http response writer failed. Error: %s", err)
-		log.Println(errStr)
-		http.Error(writer, errStr, http.StatusInternalServerError)
-	}
-}
-
-func (w *WebUIProcessor) checkPaperStatus(paperId string, writer http.ResponseWriter) ([]byte, int) {
-	paperStatus := w.centralWorker.GetSessionStatus(paperId)
 	paperStatusJson, err := json.Marshal(paperStatus)
 	if err != nil {
 		errStr := fmt.Sprintf("session status json marshal failed. Error: %s", err)
 		log.Println(errStr)
 		http.Error(writer, errStr, http.StatusInternalServerError)
-		return nil, http.StatusInternalServerError
+		return
 	}
-
 	writer.Header().Set("Content-Type", "application/json")
 	if paperStatus.Status == common.SuccessStatus {
 		writer.WriteHeader(http.StatusOK)
-		return paperStatusJson, http.StatusOK
+	} else {
+		writer.WriteHeader(http.StatusAccepted)
 	}
-	if paperStatus.Status == common.InProgressStatus {
-		writer.WriteHeader(http.StatusNoContent)
-		return paperStatusJson, http.StatusNoContent
+	if _, err = writer.Write(paperStatusJson); err != nil {
+		log.Println("Writing to http response writer failed. Error:", err)
 	}
-	return paperStatusJson, http.StatusBadRequest
 }
 
 func storeFileFromRequest(request *http.Request, uploadId, formKey string) (string, error) {

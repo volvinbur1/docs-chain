@@ -102,20 +102,21 @@ window.addEventListener("load", function (){
         let http = new XMLHttpRequest();
         http.onreadystatechange = function () {
             if ( http.readyState === XMLHttpRequest.DONE ) {
+                console.log('paper upload response status code ' + http.status)
                 if (http.status === 202) {
-                    processUploadResults(JSON.parse(http.responseText)).then(r => console.log(r))
-                } else {
-                    console.log('paper upload http request to server failed with status code ' + http.status)
+                    processUploadResults(http.responseText).then(r => console.log(r))
+                } else if ( http.status === 200 ) {
+                    displayUploadResults(http.responseText)
                 }
             }
         }
 
         http.addEventListener( 'load', function() {
-            alert( 'Data sent and response loaded.' );
+            console.log( 'Data sent and response loaded.' );
         } );
 
         http.addEventListener( 'error', function() {
-            alert( 'Sending data failed.' );
+            console.log( 'Sending data failed.' );
         } );
 
         http.open( 'POST', '/paper-upload', true )
@@ -135,10 +136,10 @@ window.addEventListener("load", function (){
         http.open('GET', '/paper-upload/status?paperId='+paperResult['id'], true);
         http.onreadystatechange = function() {
             if ( http.readyState === XMLHttpRequest.DONE ) {
-                console.log('get paper processing status request failed with status code ' + http.status)
+                console.log('get paper processing status response status code ' + http.status)
                 if ( http.status === 200 ) {
                     displayUploadResults(http.responseText)
-                } else if ( http.status === 204 ) {
+                } else if ( http.status === 202 ) {
                     processUploadResults(http.responseText)
                 }
             }
