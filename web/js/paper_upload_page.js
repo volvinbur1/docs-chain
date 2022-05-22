@@ -100,7 +100,7 @@ window.addEventListener("load", function (){
         http.onreadystatechange = function () {
             if ( http.readyState === XMLHttpRequest.DONE ) {
                 if (http.status === 202) {
-                    processUploadResults(JSON.parse(http.responseText))
+                    processUploadResults(JSON.parse(http.responseText)).then(r => console.log(r))
                 }
             }
         }
