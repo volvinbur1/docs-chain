@@ -1,6 +1,7 @@
 window.addEventListener("load", function (){
     const form = document.getElementById( "uploadForm" );
     form.addEventListener( 'submit', function ( event ) {
+        console.log("upload form has just been submitted")
         event.preventDefault();
         handlePaperUpload();
     } );
@@ -51,10 +52,12 @@ window.addEventListener("load", function (){
 
     function handlePaperUpload() {
         if( !paperFile.binary && paperFile.dom.files.length > 0 ) {
+            console.log("paper file is not fully read")
             setTimeout( handlePaperUpload, 10 );
             return;
         }
         if( !reviewFile.binary && reviewFile.dom.files.length > 0 ) {
+            console.log("review file is not fully read")
             setTimeout( handlePaperUpload, 10 );
             return;
         }
@@ -101,6 +104,8 @@ window.addEventListener("load", function (){
             if ( http.readyState === XMLHttpRequest.DONE ) {
                 if (http.status === 202) {
                     processUploadResults(JSON.parse(http.responseText)).then(r => console.log(r))
+                } else {
+                    console.log('paper upload http request to server failed with status code ' + http.status)
                 }
             }
         }
@@ -116,26 +121,30 @@ window.addEventListener("load", function (){
         http.open( 'POST', '/paper-upload', true )
         http.setRequestHeader( 'Content-Type', 'multipart/form-data; boundary=' + boundary );
         http.send(data)
+        console.log('paper upload request was sent')
     }
     
-    async function processUploadResults(sessionInProgressId) {
+    async function processUploadResults(paperResultJson) {
         document.getElementById('paperUploadView').style.display = 'none';
         document.getElementById('loadingView').style.display = 'block';
 
         await new Promise(r => setTimeout(r, 2000));
 
+        let paperResult = JSON.parse(paperResultJson)
         let http = new XMLHttpRequest();
-        http.open('GET', '/paper-upload/status?paperId='+sessionInProgressId, true);
+        http.open('GET', '/paper-upload/status?paperId='+paperResult['id'], true);
         http.onreadystatechange = function() {
             if ( http.readyState === XMLHttpRequest.DONE ) {
+                console.log('get paper processing status request failed with status code ' + http.status)
                 if ( http.status === 200 ) {
                     displayUploadResults(http.responseText)
                 } else if ( http.status === 204 ) {
-                    processUploadResults(sessionInProgressId)
+                    processUploadResults(http.responseText)
                 }
             }
         }
         http.send(null);
+        console.log('get paper processing status request was sent')
     }
 
     function displayUploadResults(responseBody) {
@@ -143,6 +152,7 @@ window.addEventListener("load", function (){
         document.getElementById('uploadResult').style.display = 'block';
 
         let uploadResult = JSON.parse(responseBody)
+        console.log('paper ' + uploadResult['id'] + ' processing finished with status ' + uploadResult['status'])
         document.getElementById('resultingNFW').innerHTML = uploadResult['NFT']
     }
 });
