@@ -28,12 +28,6 @@ const (
 
 const localStoragePath = "bin/storage"
 
-var closerHandler = func(closer io.Closer) {
-	if err := closer.Close(); err != nil {
-		log.Print(err)
-	}
-}
-
 type WebUIProcessor struct {
 	centralWorker *central.Worker
 }
@@ -134,7 +128,7 @@ func storeFileFromRequest(request *http.Request, uploadId, formKey string) (stri
 	if err != nil {
 		return "", fmt.Errorf("getting from form failed: %s", err)
 	}
-	defer closerHandler(requestFile)
+	defer common.CloserHandler(requestFile)
 
 	if err = os.MkdirAll(filepath.Join(localStoragePath, uploadId), os.ModePerm); err != nil {
 		return "", fmt.Errorf("failed to create all file storega path subdirs: %s", err)
@@ -151,7 +145,7 @@ func storeFileFromRequest(request *http.Request, uploadId, formKey string) (stri
 	if err != nil {
 		return "", fmt.Errorf("failed to create file %s Error: %s", localFilePath, err)
 	}
-	defer closerHandler(localFile)
+	defer common.CloserHandler(localFile)
 
 	_, err = io.Copy(localFile, requestFile)
 	if err != nil {
