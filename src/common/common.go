@@ -55,3 +55,9 @@ type PaperProcessResult struct {
 	Status string `json:"status"`
 	NFT    string `json:"NFT"`
 }
+
+const (
+	LocalStoragePath  = "bin/storage"
+	PaperPdfFileName  = "paper.pdf"
+	ReviewPdfFileName = "review.pdf"
+)

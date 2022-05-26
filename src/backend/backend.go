@@ -26,8 +26,6 @@ const (
 	paperIdKey          = "paperId"
 )
 
-const localStoragePath = "bin/storage"
-
 type WebUIProcessor struct {
 	centralWorker *central.Worker
 }
@@ -130,15 +128,15 @@ func storeFileFromRequest(request *http.Request, uploadId, formKey string) (stri
 	}
 	defer common.CloserHandler(requestFile)
 
-	if err = os.MkdirAll(filepath.Join(localStoragePath, uploadId), os.ModePerm); err != nil {
+	if err = os.MkdirAll(filepath.Join(common.LocalStoragePath, uploadId), os.ModePerm); err != nil {
 		return "", fmt.Errorf("failed to create all file storega path subdirs: %s", err)
 	}
 
 	var localFilePath string
 	if formKey == paperFileFormKey {
-		localFilePath = filepath.Join(localStoragePath, uploadId, "paper.pdf")
+		localFilePath = filepath.Join(common.LocalStoragePath, uploadId, common.PaperPdfFileName)
 	} else if formKey == reviewFileFormKey {
-		localFilePath = filepath.Join(localStoragePath, uploadId, "review.pdf")
+		localFilePath = filepath.Join(common.LocalStoragePath, uploadId, common.ReviewPdfFileName)
 	}
 
 	localFile, err := os.OpenFile(localFilePath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0664)
