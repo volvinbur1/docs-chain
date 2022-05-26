@@ -51,7 +51,7 @@ func (w *WebUIProcessor) HandlePaperUploadRequest(writer http.ResponseWriter, re
 			http.Error(writer, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		w.centralWorker.AddNewPaperToQueue(newPaper)
+		w.centralWorker.NewPaperAction(newPaper)
 		w.checkPaperStatus(newPaper.Id, writer)
 	default:
 		http.Error(writer, fmt.Sprintf("Http is method %s is not supported", request.Method), http.StatusNotImplemented)
@@ -92,8 +92,10 @@ func (w *WebUIProcessor) parsePaperUploadRequest(request *http.Request) (common.
 }
 
 func (w *WebUIProcessor) checkPaperStatus(paperId string, writer http.ResponseWriter) {
-	paperStatus := w.centralWorker.GetSessionStatus(paperId)
-	if paperStatus.Status == common.UnknownStatus {
+	returnCh := make(chan interface{})
+	w.centralWorker.GetPaperStatusAction(paperId, returnCh)
+	paperStatus, isOkay := (<-returnCh).(common.PaperProcessingResult)
+	if !isOkay || paperStatus.Status == common.UnknownStatus {
 		writer.WriteHeader(http.StatusBadRequest)
 		errStr := fmt.Sprintf("Paper id %s is unkown.", paperStatus.Id)
 		log.Println(errStr)

@@ -11,6 +11,12 @@ var CloserHandler = func(closer io.Closer) {
 	}
 }
 
+const (
+	LocalStoragePath  = "bin/storage"
+	PaperPdfFileName  = "paper.pdf"
+	ReviewPdfFileName = "review.pdf"
+)
+
 type UploadedPaper struct {
 	Id          string `json:"uploadId" bson:"uploadId"`
 	Topic       string `json:"topic" bson:"topic"`
@@ -42,6 +48,13 @@ type Author struct {
 	ScienceDegree string `json:"scienceDegree" bson:"scienceDegree"`
 }
 
+type PaperShingles struct {
+	Id                string   `json:"id" bson:"id"`
+	Shingles          []uint32 `json:"shingles" bson:"shingles"`
+	WordsInShingleCnt int      `json:"wordsInShingleCnt" bson:"wordsInShingleCnt"`
+	HashAlgorithm     string   `json:"hashAlgorithm" bson:"hashAlgorithm"`
+}
+
 const (
 	UnknownStatus              = "unknown"
 	IsReadyForProcessingStatus = "isReadyForProcessing"
@@ -50,21 +63,23 @@ const (
 	ProcessingFailedStatus     = "fail"
 )
 
-type PaperProcessResult struct {
+type PaperProcessingResult struct {
 	Id     string `json:"id"`
 	Status string `json:"status"`
 	NFT    string `json:"NFT"`
 }
 
+type ServiceAction = int
+
 const (
-	LocalStoragePath  = "bin/storage"
-	PaperPdfFileName  = "paper.pdf"
-	ReviewPdfFileName = "review.pdf"
+	NewPaperUploadAction ServiceAction = iota
+	GetPaperProcessingStatusAction
+	GetPaperByHashAction
+	GetPaperInfoByNFTAction
 )
 
-type PaperShingles struct {
-	Id                string   `json:"id" bson:"id"`
-	Shingles          []uint32 `json:"shingles" bson:"shingles"`
-	WordsInShingleCnt int      `json:"wordsInShingleCnt" bson:"wordsInShingleCnt"`
-	HashAlgorithm     string   `json:"hashAlgorithm" bson:"hashAlgorithm"`
+type ServiceTask struct {
+	Action   ServiceAction
+	Payload  interface{}
+	ReturnCh chan<- interface{}
 }
