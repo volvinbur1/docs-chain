@@ -8,12 +8,17 @@ import (
 	"github.com/ledongthuc/pdf"
 	"github.com/volvinbur1/docs-chain/src/common"
 	"github.com/volvinbur1/docs-chain/src/storage"
+	"hash/fnv"
 	"log"
 	"regexp"
 	"strings"
 )
 
 var tagsToRemoveList = [...]string{"CC", "DT", "EX", "IN", "PDT", "TO", "UH", "WDT", "WP", "WP$", "WRB"}
+
+const specialChars = ".,!?@#$&+-*/=^%~(){}[]<>'`|\"\\"
+const shinglesCount = 7
+const shingleHashAlgorithm = "fnv32a"
 
 type PaperPdfProcessor struct {
 	paperFilePath string
@@ -52,6 +57,32 @@ func (p *PaperPdfProcessor) PrepareFile(paperId string) error {
 	return nil
 }
 
+func (p *PaperPdfProcessor) MakeShingles(paperId string) error {
+	if strings.ContainsAny(p.canonizedText, specialChars) {
+		return fmt.Errorf("canonized text for paper %s is not preapared", paperId)
+	}
+
+	words := strings.Fields(p.canonizedText)
+	var shinglesList []uint32
+	for idx := 0; idx < len(words)-shinglesCount; idx++ {
+		shingle := strings.Join(words[idx:idx+shinglesCount], "")
+		fnv32a := fnv.New32a()
+		_, err := fnv32a.Write([]byte(shingle))
+		if err != nil {
+			return fmt.Errorf("hashing shingle for %s failed with error: %s", paperId, err)
+		}
+		shinglesList = append(shinglesList, fnv32a.Sum32())
+	}
+
+	log.Printf("Shingles hashes for paper %s has been created.", paperId)
+	return p.dbManager.AddPaperShingles(common.PaperShingles{
+		Id:                paperId,
+		Shingles:          shinglesList,
+		WordsInShingleCnt: shinglesCount,
+		HashAlgorithm:     shingleHashAlgorithm,
+	})
+}
+
 // readPaperPdf reads a paper pdf plain text starting from 5 and to (n-2) pages
 func readPaperPdf(path string) (string, error) {
 	file, pdfReader, err := pdf.Open(path)
@@ -82,7 +113,7 @@ func readPaperPdf(path string) (string, error) {
 func removePunctuation(text string) (string, error) {
 	text = strings.ToLower(text)
 
-	reg, err := regexp.Compile("[^a-zA-Z\\d ]+")
+	reg, err := regexp.Compile("[^a-zA-Z\\d ]+ ")
 	if err != nil {
 		return "", fmt.Errorf("alpha-numerical regural expression instance creation failed. Error %s", err)
 	}

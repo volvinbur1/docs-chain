@@ -61,3 +61,10 @@ const (
 	PaperPdfFileName  = "paper.pdf"
 	ReviewPdfFileName = "review.pdf"
 )
+
+type PaperShingles struct {
+	Id                string   `json:"id" bson:"id"`
+	Shingles          []uint32 `json:"shingles" bson:"shingles"`
+	WordsInShingleCnt int      `json:"wordsInShingleCnt" bson:"wordsInShingleCnt"`
+	HashAlgorithm     string   `json:"hashAlgorithm" bson:"hashAlgorithm"`
+}

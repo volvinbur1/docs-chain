@@ -14,8 +14,9 @@ import (
 const mongoServerUri = "mongodb://localhost:27017"
 
 const (
-	dbName               = "docsChain"
-	papersCollectionName = "papersList"
+	dbName                   = "docsChain"
+	papersCollection         = "papersList"
+	papersShinglesCollection = "papersShingles"
 )
 
 type DatabaseManager struct {
@@ -50,13 +51,29 @@ func (d *DatabaseManager) AddNewPaper(newPaper common.UploadedPaper) error {
 		return err
 	}
 
-	collection := d.client.Database(dbName).Collection(papersCollectionName)
+	collection := d.client.Database(dbName).Collection(papersCollection)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	_, err := collection.InsertOne(ctx, newPaper)
 	if err != nil {
-		return fmt.Errorf("newly uploaded paper insertion to database failed: %s", err)
+		return fmt.Errorf("new paper insertion to database failed: %s", err)
+	}
+	return nil
+}
+
+func (d *DatabaseManager) AddPaperShingles(paperShingles common.PaperShingles) error {
+	if err := d.pingServer(); err != nil {
+		return err
+	}
+
+	collection := d.client.Database(dbName).Collection(papersShinglesCollection)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	_, err := collection.InsertOne(ctx, paperShingles)
+	if err != nil {
+		return fmt.Errorf("paper shingles insertion to database failed: %s", err)
 	}
 	return nil
 }

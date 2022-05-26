@@ -9,7 +9,7 @@ import (
 	"image/color"
 )
 
-func CreateNFTUnicode(metadata common.PaperNftMetadata) ([]byte, error) {
+func CreateNFTQRCode(metadata common.PaperNftMetadata) ([]byte, error) {
 	nftJson, err := json.Marshal(metadata)
 	if err != nil {
 		return nil, fmt.Errorf("paper nft metadata marshal failed. Error %s", err)
