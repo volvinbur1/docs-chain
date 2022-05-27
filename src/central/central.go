@@ -98,7 +98,7 @@ func (w *Worker) handleNewPaperUpload(newPaper common.UploadedPaper) {
 		return
 	}
 
-	if analysisResult.Uniqueness >= 80 {
+	if analysisResult.Uniqueness < analyzer.UniquenessThresholdValue {
 		log.Println("Not enough uniqueness for paper ", newPaper.Id)
 		w.processingPapersStatus.Store(newPaper.Id, common.NotEnoughUniquenessStatus)
 		return
@@ -114,11 +114,11 @@ func (w *Worker) handleNewPaperUpload(newPaper common.UploadedPaper) {
 }
 
 func (w *Worker) analyzePaperPdf(newPaper common.UploadedPaper) (common.AnalysisResult, error) {
-	pdfProcessor := analyzer.NewPaperPdfProcessor(newPaper.PaperFilePath, w.dbManager, w.dispatcher)
-	if err := pdfProcessor.PrepareFile(newPaper.Id); err != nil {
+	pdfProcessor := analyzer.NewPaperPdfProcessor(newPaper, w.dbManager, w.dispatcher)
+	if err := pdfProcessor.PrepareFile(); err != nil {
 		return common.AnalysisResult{}, err
 	}
-	if err := pdfProcessor.PrepareFile(newPaper.Id); err != nil {
+	if err := pdfProcessor.PrepareFile(); err != nil {
 		return common.AnalysisResult{}, err
 	}
 	return pdfProcessor.PerformAnalyze()
