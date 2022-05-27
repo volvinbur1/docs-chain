@@ -19,6 +19,8 @@ const (
 
 type UploadedPaper struct {
 	Id             string
+	NftName        string
+	NftSymbol      string
 	Topic          string
 	Authors        []Author
 	PaperFilePath  string
@@ -117,8 +119,9 @@ const (
 	Expiration   = "expiration"
 )
 
-type NftMintResponse struct {
-	NftMint,
-	MintRecoveryPhrase,
-	TransactionSignature string
+type NftResponse struct {
+	Id                   string `json:"id" bson:"id"`
+	Mint                 string `json:"mint" bson:"mint"`
+	MintRecoveryPhrase   string `json:"mintRecoveryPhrase" bson:"mintRecoveryPhrase"`
+	TransactionSignature string `json:"transactionSignature" bson:"transactionSignature"`
 }

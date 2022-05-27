@@ -101,16 +101,16 @@ func (d *DatabaseManager) GetAllPapersShingles() ([]common.PaperShingles, error)
 	return paperShingles, nil
 }
 
-func (d *DatabaseManager) AddPaperNft(paperId, nft string) error {
+func (d *DatabaseManager) AddPaperNft(paperNft common.NftResponse) error {
 	if err := d.pingServer(); err != nil {
 		return fmt.Errorf("mongo db ping error: %s", err)
 	}
 
-	collection := d.client.Database(dbName).Collection(papersShinglesCollection)
+	collection := d.client.Database(dbName).Collection(papersNftCollection)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	_, err := collection.InsertOne(ctx, bson.D{{"id", paperId}, {"nft", nft}})
+	_, err := collection.InsertOne(ctx, paperNft)
 	if err != nil {
 		return fmt.Errorf("paper nft insertion to database failed: %s", err)
 	}

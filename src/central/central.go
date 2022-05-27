@@ -16,6 +16,7 @@ type Worker struct {
 	dbManager              *storage.DatabaseManager
 	centralCh              chan common.ServiceTask
 	dispatcher             *analyzer.Dispatcher
+	blockChain             *blockchain.BlockChain
 	processingPapersStatus sync.Map // key - paper id; value status
 }
 
@@ -24,6 +25,7 @@ func NewWorker() *Worker {
 		dbManager:              storage.NewDatabaseManager(),
 		centralCh:              make(chan common.ServiceTask, sizeOfProcessingQueue),
 		dispatcher:             analyzer.NewDispatcher(),
+		blockChain:             blockchain.New(),
 		processingPapersStatus: sync.Map{},
 	}
 }
@@ -125,20 +127,24 @@ func (w *Worker) analyzePaperPdf(newPaper common.UploadedPaper) (common.Analysis
 }
 
 func (w *Worker) savePaperInSystem(newPaper common.UploadedPaper, analysisResult common.AnalysisResult) error {
-	paperMetadata, err := w.createPaperMetadata(newPaper, analysisResult)
+	qrCode, err := w.createPaperQrCode(newPaper, analysisResult)
 	if err != nil {
 		return err
 	}
 
-	if err = w.dbManager.AddNewPaper(paperMetadata); err != nil {
+	nftImageUrl, err := w.blockChain.GetImageUrl(qrCode)
+	if err != nil {
 		return err
 	}
-	//TODO: call NFT creation
-	return nil
+
+	return w.createNft(newPaper, nftImageUrl)
 }
 
-func (w *Worker) createPaperMetadata(newPaper common.UploadedPaper, analysisResult common.AnalysisResult) (common.PaperMetadata, error) {
-	//TODO: add paper to ipfs
+func (w *Worker) createPaperQrCode(newPaper common.UploadedPaper, analysisResult common.AnalysisResult) (string, error) {
+	ipfsCid, err := ipfs.AddFileToIpfs(newPaper.PaperFilePath)
+	if err != nil {
+		return "", fmt.Errorf("adding paper %s pdf to ipfs failed. Error: %s", newPaper.Id, err)
+	}
 
 	var similarPapersNft []string
 	for _, id := range analysisResult.SimilarPapersId {
@@ -150,13 +156,35 @@ func (w *Worker) createPaperMetadata(newPaper common.UploadedPaper, analysisResu
 		similarPapersNft = append(similarPapersNft, nft)
 	}
 
-	return common.PaperMetadata{
+	paperMetadata := common.PaperMetadata{
 		Id:               newPaper.Id,
 		Topic:            newPaper.Topic,
 		UploadDate:       time.Now().Format(time.RFC850),
 		Authors:          newPaper.Authors,
-		PaperIpfsHash:    "", //TODO: add ipfs hash here
+		PaperIpfsHash:    ipfsCid,
 		PaperUniqueness:  fmt.Sprintf("%.2f", analysisResult.Uniqueness),
 		SimilarPapersNfr: similarPapersNft,
-	}, nil
+	}
+	if err = w.dbManager.AddNewPaper(paperMetadata); err != nil {
+		return "", err
+	}
+
+	return CreateNFTQRCode(paperMetadata)
+}
+
+func (w *Worker) createNft(newPaper common.UploadedPaper, nftImageUrl string) error {
+	nftMetadata := blockchain.NftMetaData{
+		Name:        newPaper.NftName,
+		Symbol:      newPaper.NftSymbol,
+		Description: fmt.Sprint(newPaper.Id, "|", newPaper.Topic),
+		ImageUrl:    nftImageUrl,
+	}
+
+	nftResponse, err := w.blockChain.AddToSolana(nftMetadata)
+	if err != nil {
+		return err
+	}
+
+	nftResponse.Id = newPaper.Id
+	return w.dbManager.AddPaperNft(nftResponse)
 }

@@ -23,7 +23,7 @@ func (blockChain *BlockChain) AddToSolana(nftStruct NftStruct) (common.NftMintRe
 
 	req, err := http.NewRequest(http.MethodPost, reqUrl, strings.NewReader(params.Encode()))
 	if err != nil {
-		return common.NftMintResponse{}, err
+		return common.NftResponse{}, err
 	}
 
 	req.Header.Add(common.ApiKey, blockChain.BlockApiKey)
@@ -31,7 +31,7 @@ func (blockChain *BlockChain) AddToSolana(nftStruct NftStruct) (common.NftMintRe
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return common.NftMintResponse{}, err
+		return common.NftResponse{}, err
 	}
 
 	defer res.Body.Close()

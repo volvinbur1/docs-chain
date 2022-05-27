@@ -21,6 +21,7 @@ func AddFileToIpfs(path string) (string, error) {
 	return cid, nil
 
 }
+
 func GetFileFromIpfs(cid string, outDir string) error {
 	sh := shell.NewShell("localhost:5001")
 
