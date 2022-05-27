@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/volvinbur1/docs-chain/src/common"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
@@ -14,8 +15,10 @@ import (
 const mongoServerUri = "mongodb://localhost:27017"
 
 const (
-	dbName               = "docsChain"
-	papersCollectionName = "papersList"
+	dbName                   = "docsChain"
+	papersCollection         = "papersList"
+	papersShinglesCollection = "papersShingles"
+	papersNftCollection      = "papersNft"
 )
 
 type DatabaseManager struct {
@@ -45,20 +48,94 @@ func (d *DatabaseManager) Disconnect() {
 	}
 }
 
-func (d *DatabaseManager) AddNewPaper(newPaper common.UploadedPaper) error {
+func (d *DatabaseManager) AddNewPaper(newPaper common.PaperMetadata) error {
 	if err := d.pingServer(); err != nil {
-		return err
+		return fmt.Errorf("mongo db ping error: %s", err)
 	}
 
-	collection := d.client.Database(dbName).Collection(papersCollectionName)
+	collection := d.client.Database(dbName).Collection(papersCollection)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	_, err := collection.InsertOne(ctx, newPaper)
 	if err != nil {
-		return fmt.Errorf("newly uploaded paper insertion to database failed: %s", err)
+		return fmt.Errorf("new paper metadata insertion to database failed: %s", err)
 	}
 	return nil
+}
+
+func (d *DatabaseManager) AddPaperShingles(paperShingles common.PaperShingles) error {
+	if err := d.pingServer(); err != nil {
+		return fmt.Errorf("mongo db ping error: %s", err)
+	}
+
+	collection := d.client.Database(dbName).Collection(papersShinglesCollection)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	_, err := collection.InsertOne(ctx, paperShingles)
+	if err != nil {
+		return fmt.Errorf("paper shingles insertion to database failed: %s", err)
+	}
+	return nil
+}
+
+func (d *DatabaseManager) GetAllPapersShingles() ([]common.PaperShingles, error) {
+	if err := d.pingServer(); err != nil {
+		return nil, fmt.Errorf("mongo db ping error: %s", err)
+	}
+
+	collection := d.client.Database(dbName).Collection(papersShinglesCollection)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	cursor, err := collection.Find(ctx, bson.D{})
+	if err != nil {
+		return nil, fmt.Errorf("all paper shingles retriviation from database failed: %s", err)
+	}
+
+	paperShingles := make([]common.PaperShingles, 0)
+	if err = cursor.All(ctx, &paperShingles); err != nil {
+		return nil, fmt.Errorf("all paper shingles decode failed: %s", err)
+	}
+	return paperShingles, nil
+}
+
+func (d *DatabaseManager) AddPaperNft(paperId, nft string) error {
+	if err := d.pingServer(); err != nil {
+		return fmt.Errorf("mongo db ping error: %s", err)
+	}
+
+	collection := d.client.Database(dbName).Collection(papersShinglesCollection)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	_, err := collection.InsertOne(ctx, bson.D{{"id", paperId}, {"nft", nft}})
+	if err != nil {
+		return fmt.Errorf("paper nft insertion to database failed: %s", err)
+	}
+	return nil
+}
+
+func (d *DatabaseManager) GetPaperNftById(paperId string) (string, error) {
+	if err := d.pingServer(); err != nil {
+		return "", fmt.Errorf("mongo db ping error: %s", err)
+	}
+
+	collection := d.client.Database(dbName).Collection(papersShinglesCollection)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	cursor, err := collection.Find(ctx, bson.D{{"id", paperId}})
+	if err != nil {
+		return "", fmt.Errorf("paper nft retriviation from database failed: %s", err)
+	}
+
+	var nft string
+	if err = cursor.Decode(&nft); err != nil {
+		return "", fmt.Errorf("paper nft retriviation from database failed: %s", err)
+	}
+	return nft, nil
 }
 
 func (d *DatabaseManager) pingServer() error {

@@ -26,14 +26,6 @@ const (
 	paperIdKey          = "paperId"
 )
 
-const localStoragePath = "bin/storage"
-
-var closerHandler = func(closer io.Closer) {
-	if err := closer.Close(); err != nil {
-		log.Print(err)
-	}
-}
-
 type WebUIProcessor struct {
 	centralWorker *central.Worker
 }
@@ -59,7 +51,7 @@ func (w *WebUIProcessor) HandlePaperUploadRequest(writer http.ResponseWriter, re
 			http.Error(writer, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		w.centralWorker.AddNewPaperToQueue(newPaper)
+		w.centralWorker.NewPaperAction(newPaper)
 		w.checkPaperStatus(newPaper.Id, writer)
 	default:
 		http.Error(writer, fmt.Sprintf("Http is method %s is not supported", request.Method), http.StatusNotImplemented)
@@ -90,18 +82,20 @@ func (w *WebUIProcessor) parsePaperUploadRequest(request *http.Request) (common.
 	var uploadedPaper common.UploadedPaper
 	uploadedPaper.Id = xid.New().String()
 	uploadedPaper.Topic = request.Form.Get(paperTopicFormKey)
-	uploadedPaper.CreatorName = request.Form.Get(uploaderNameFormKey)
-	uploadedPaper.PaperPath, err = storeFileFromRequest(request, uploadedPaper.Id, paperFileFormKey)
+	uploadedPaper.Authors = append(uploadedPaper.Authors, common.Author{Name: request.Form.Get(uploaderNameFormKey)})
+	uploadedPaper.PaperFilePath, err = storeFileFromRequest(request, uploadedPaper.Id, paperFileFormKey)
 	if err != nil {
 		return common.UploadedPaper{}, err
 	}
-	uploadedPaper.ReviewPath, err = storeFileFromRequest(request, uploadedPaper.Id, reviewFileFormKey)
+	uploadedPaper.ReviewFilePath, err = storeFileFromRequest(request, uploadedPaper.Id, reviewFileFormKey)
 	return uploadedPaper, err
 }
 
 func (w *WebUIProcessor) checkPaperStatus(paperId string, writer http.ResponseWriter) {
-	paperStatus := w.centralWorker.GetSessionStatus(paperId)
-	if paperStatus.Status == common.UnknownStatus {
+	returnCh := make(chan interface{})
+	w.centralWorker.GetPaperStatusAction(paperId, returnCh)
+	paperStatus, isOkay := (<-returnCh).(common.PaperProcessingResult)
+	if !isOkay || paperStatus.Status == common.UnknownStatus {
 		writer.WriteHeader(http.StatusBadRequest)
 		errStr := fmt.Sprintf("Paper id %s is unkown.", paperStatus.Id)
 		log.Println(errStr)
@@ -134,24 +128,24 @@ func storeFileFromRequest(request *http.Request, uploadId, formKey string) (stri
 	if err != nil {
 		return "", fmt.Errorf("getting from form failed: %s", err)
 	}
-	defer closerHandler(requestFile)
+	defer common.CloserHandler(requestFile)
 
-	if err = os.MkdirAll(filepath.Join(localStoragePath, uploadId), os.ModePerm); err != nil {
+	if err = os.MkdirAll(filepath.Join(common.LocalStoragePath, uploadId), os.ModePerm); err != nil {
 		return "", fmt.Errorf("failed to create all file storega path subdirs: %s", err)
 	}
 
 	var localFilePath string
 	if formKey == paperFileFormKey {
-		localFilePath = filepath.Join(localStoragePath, uploadId, "paper.pdf")
+		localFilePath = filepath.Join(common.LocalStoragePath, uploadId, common.PaperPdfFileName)
 	} else if formKey == reviewFileFormKey {
-		localFilePath = filepath.Join(localStoragePath, uploadId, "review.pdf")
+		localFilePath = filepath.Join(common.LocalStoragePath, uploadId, common.ReviewPdfFileName)
 	}
 
 	localFile, err := os.OpenFile(localFilePath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0664)
 	if err != nil {
 		return "", fmt.Errorf("failed to create file %s Error: %s", localFilePath, err)
 	}
-	defer closerHandler(localFile)
+	defer common.CloserHandler(localFile)
 
 	_, err = io.Copy(localFile, requestFile)
 	if err != nil {
