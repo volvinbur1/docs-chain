@@ -1,10 +1,5 @@
 package main
 
-import (
-	"fmt"
-	"github.com/volvinbur1/docs-chain/src/blockchain"
-)
-
 func main() {
 	//centralWorker := central.NewWorker()
 	//defer centralWorker.Stop()
@@ -14,19 +9,19 @@ func main() {
 	//log.Fatal(webUIProcessor.ListenHttp())
 	//fmt.Println(ipfs.AddFileToIpfs("ІТ84_Лисенко_Картка1.pdf"))
 	//mnemonik := "network reduce eyebrow aerobic obtain wise force cover candy enjoy advice affair"
-	blockChain := blockchain.New()
-	imageBase64, err := blockchain.ReadImage("img.png")
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	imageUrl, err := blockChain.GetImageUrl(imageBase64)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	fmt.Println(imageUrl)
+	//blockChain := blockchain.New()
+	//imageBase64, err := blockchain.ReadImage("img.png")
+	//if err != nil {
+	//	fmt.Println(err)
+	//	return
+	//}
+	//
+	//imageUrl, err := blockChain.GetImageUrl(imageBase64)
+	//if err != nil {
+	//	fmt.Println(err)
+	//	return
+	//}
+	//fmt.Println(imageUrl)
 
 	//nftStruct := blockchain.NftStruct{NftImageUrl: imageUrl, NftName: "Test", NftDescription: "I do not know", NftSymbol: "QWQ"}
 	//
