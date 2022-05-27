@@ -18,26 +18,27 @@ const (
 )
 
 type UploadedPaper struct {
-	Id          string `json:"uploadId" bson:"uploadId"`
-	Topic       string `json:"topic" bson:"topic"`
-	CreatorName string `json:"creatorName" bson:"creatorName"`
-	IpfsHash    string `json:"ipfsHash" bson:"ipfsHash"`
-	PaperPath   string `json:"paperPath" bson:"paperPath"`
-	ReviewPath  string `json:"reviewPath" bson:"reviewPath"`
+	Id             string
+	Topic          string
+	Authors        []Author
+	PaperFilePath  string
+	ReviewFilePath string
 }
 
-type PaperAnalysis struct {
-	Id string `json:"id" bson:"id"`
+type AnalysisResult struct {
+	Id              string
+	Uniqueness      float64
+	SimilarPapersId []string
 }
 
-type PaperNftMetadata struct {
+type PaperMetadata struct {
 	Id               string   `json:"id" bson:"id"`
 	Topic            string   `json:"topic" bson:"topic"`
 	UploadDate       string   `json:"uploadDate" bson:"uploadDate"`
 	Authors          []Author `json:"authors" bson:"authors"`
-	PaperIpfsHash    string   `json:"paperIpfsHash" bson:"paperIpfsHash"`
-	ReviewRating     string   `json:"reviewRating" bson:"reviewRating"`
-	PaperUniqueness  string   `json:"paperUniqueness" bson:"paperUniqueness"`
+	PaperIpfsHash    string   `json:"paperIpfsHash,omitempty" bson:"paperIpfsHash,omitempty"`
+	ReviewRating     string   `json:"reviewRating,omitempty" bson:"reviewRating,omitempty"`
+	PaperUniqueness  string   `json:"paperUniqueness,omitempty" bson:"paperUniqueness,omitempty"`
 	SimilarPapersNfr []string `json:"similarPapersNfr,omitempty" bson:"similarPapersNfr,omitempty"`
 }
 
@@ -56,16 +57,17 @@ type PaperShingles struct {
 }
 
 const (
-	UnknownStatus              = "unknown"
-	IsReadyForProcessingStatus = "isReadyForProcessing"
-	InProgressStatus           = "inProgress"
-	SuccessStatus              = "success"
-	ProcessingFailedStatus     = "fail"
+	UnknownStatus = iota
+	ProcessingFailedStatus
+	NotEnoughUniquenessStatus
+	IsReadyForProcessingStatus
+	InProgressStatus
+	SuccessStatus
 )
 
 type PaperProcessingResult struct {
 	Id     string `json:"id"`
-	Status string `json:"status"`
+	Status int    `json:"status"`
 	NFT    string `json:"NFT"`
 }
 

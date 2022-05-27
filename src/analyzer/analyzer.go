@@ -2,6 +2,7 @@ package analyzer
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"github.com/gertd/go-pluralize"
 	"github.com/jdkato/prose/v2"
@@ -81,6 +82,10 @@ func (p *PaperPdfProcessor) MakeShingles(paperId string) error {
 		WordsInShingleCnt: shinglesCount,
 		HashAlgorithm:     shingleHashAlgorithm,
 	})
+}
+
+func (p *PaperPdfProcessor) PerformAnalyze() (common.AnalysisResult, error) {
+	return common.AnalysisResult{}, errors.New("not implemeted")
 }
 
 // readPaperPdf reads a paper pdf plain text starting from 5 and to (n-2) pages

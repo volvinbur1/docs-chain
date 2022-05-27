@@ -82,12 +82,12 @@ func (w *WebUIProcessor) parsePaperUploadRequest(request *http.Request) (common.
 	var uploadedPaper common.UploadedPaper
 	uploadedPaper.Id = xid.New().String()
 	uploadedPaper.Topic = request.Form.Get(paperTopicFormKey)
-	uploadedPaper.CreatorName = request.Form.Get(uploaderNameFormKey)
-	uploadedPaper.PaperPath, err = storeFileFromRequest(request, uploadedPaper.Id, paperFileFormKey)
+	uploadedPaper.Authors = append(uploadedPaper.Authors, common.Author{Name: request.Form.Get(uploaderNameFormKey)})
+	uploadedPaper.PaperFilePath, err = storeFileFromRequest(request, uploadedPaper.Id, paperFileFormKey)
 	if err != nil {
 		return common.UploadedPaper{}, err
 	}
-	uploadedPaper.ReviewPath, err = storeFileFromRequest(request, uploadedPaper.Id, reviewFileFormKey)
+	uploadedPaper.ReviewFilePath, err = storeFileFromRequest(request, uploadedPaper.Id, reviewFileFormKey)
 	return uploadedPaper, err
 }
 

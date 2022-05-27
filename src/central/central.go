@@ -1,11 +1,13 @@
 package central
 
 import (
+	"fmt"
 	"github.com/volvinbur1/docs-chain/src/analyzer"
 	"github.com/volvinbur1/docs-chain/src/common"
 	"github.com/volvinbur1/docs-chain/src/storage"
 	"log"
 	"sync"
+	"time"
 )
 
 const sizeOfProcessingQueue = 1024
@@ -77,7 +79,7 @@ func (w *Worker) handlePaperStatusRequest(paperId string, returnCh chan<- interf
 	if !exist {
 		res.Status = common.UnknownStatus
 	} else {
-		res.Status = status.(string)
+		res.Status = status.(int)
 	}
 
 	returnCh <- res
@@ -87,22 +89,72 @@ func (w *Worker) handleNewPaperUpload(newPaper common.UploadedPaper) {
 	log.Printf("New paper %s processing started.", newPaper.Id)
 	w.processingPapersStatus.Store(newPaper.Id, common.InProgressStatus)
 
-	if err := w.dbManager.AddNewPaper(newPaper); err != nil {
+	analysisResult, err := w.analyzePaperPdf(newPaper)
+	if err != nil {
 		log.Println(err)
 		w.processingPapersStatus.Store(newPaper.Id, common.ProcessingFailedStatus)
 		return
 	}
 
-	pdfProcessor := analyzer.NewPaperPdfProcessor(newPaper.PaperPath, w.dbManager)
-	if err := pdfProcessor.PrepareFile(newPaper.Id); err != nil {
-		log.Println(err)
-		w.processingPapersStatus.Store(newPaper.Id, common.ProcessingFailedStatus)
+	if analysisResult.Uniqueness >= 80 {
+		log.Println("Not enough uniqueness for paper ", newPaper.Id)
+		w.processingPapersStatus.Store(newPaper.Id, common.NotEnoughUniquenessStatus)
 		return
 	}
-	if err := pdfProcessor.PrepareFile(newPaper.Id); err != nil {
+
+	err = w.savePaperInSystem(newPaper, analysisResult)
+	if err != nil {
 		log.Println(err)
 		w.processingPapersStatus.Store(newPaper.Id, common.ProcessingFailedStatus)
 		return
 	}
 	w.processingPapersStatus.Store(newPaper.Id, common.SuccessStatus)
+}
+
+func (w *Worker) analyzePaperPdf(newPaper common.UploadedPaper) (common.AnalysisResult, error) {
+	pdfProcessor := analyzer.NewPaperPdfProcessor(newPaper.PaperFilePath, w.dbManager)
+	if err := pdfProcessor.PrepareFile(newPaper.Id); err != nil {
+		return common.AnalysisResult{}, err
+	}
+	if err := pdfProcessor.PrepareFile(newPaper.Id); err != nil {
+		return common.AnalysisResult{}, err
+	}
+	return pdfProcessor.PerformAnalyze()
+}
+
+func (w *Worker) savePaperInSystem(newPaper common.UploadedPaper, analysisResult common.AnalysisResult) error {
+	paperMetadata, err := w.createPaperMetadata(newPaper, analysisResult)
+	if err != nil {
+		return err
+	}
+
+	if err = w.dbManager.AddNewPaper(paperMetadata); err != nil {
+		return err
+	}
+	//TODO: call NFT creation
+	return nil
+}
+
+func (w *Worker) createPaperMetadata(newPaper common.UploadedPaper, analysisResult common.AnalysisResult) (common.PaperMetadata, error) {
+	//TODO: add paper to ipfs
+
+	var similarPapersNft []string
+	for _, id := range analysisResult.SimilarPapersId {
+		nft, err := w.dbManager.GetPaperNftById(id)
+		if err != nil {
+			log.Printf("Getting nft for paper %s failed. Error: %s", id, err)
+			continue
+		}
+		similarPapersNft = append(similarPapersNft, nft)
+	}
+
+	return common.PaperMetadata{
+		Id:               newPaper.Id,
+		Topic:            newPaper.Topic,
+		UploadDate:       time.Now().Format(time.RFC850),
+		Authors:          newPaper.Authors,
+		PaperIpfsHash:    "", //TODO: add ipfs hash here
+		PaperUniqueness:  fmt.Sprintf("%.2f", analysisResult.Uniqueness),
+		SimilarPapersNfr: similarPapersNft,
+	}, nil
 }
