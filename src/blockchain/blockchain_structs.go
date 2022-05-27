@@ -1,8 +1,8 @@
 package blockchain
 
-type NftStruct struct {
-	NftName        string `json:"nft_name"`
-	NftSymbol      string `json:"nft_symbol"`
-	NftDescription string `json:"nft_description"`
-	NftImageUrl    string
+type NftMetaData struct {
+	Name        string `json:"nft_name"`
+	Symbol      string `json:"nft_symbol"`
+	Description string `json:"nft_description"`
+	ImageUrl    string
 }

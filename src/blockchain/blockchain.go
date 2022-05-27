@@ -8,17 +8,17 @@ import (
 	"strings"
 )
 
-func (blockChain *BlockChain) AddToSolana(nftStruct NftStruct) (common.NftMintResponse, error) {
+func (blockChain *BlockChain) AddToSolana(nftStruct NftMetaData) (common.NftResponse, error) {
 	reqUrl := common.NftBaseUrl + common.MintEndpoint
 
 	params := url.Values{}
 	params.Add(common.Mnemonic, blockChain.Mnemonic)
 	params.Add(common.DerivationPath, "")
-	params.Add(common.NfrName, nftStruct.NftName)
-	params.Add(common.NftSymbol, nftStruct.NftSymbol)
-	params.Add(common.Description, nftStruct.NftDescription)
+	params.Add(common.NfrName, nftStruct.Name)
+	params.Add(common.NftSymbol, nftStruct.Symbol)
+	params.Add(common.Description, nftStruct.Description)
 	params.Add(common.Network, common.DevNetwork)
-	params.Add(common.NftUrl, nftStruct.NftImageUrl)
+	params.Add(common.NftUrl, nftStruct.ImageUrl)
 	params.Add(common.NftUploadMethod, common.Link)
 
 	req, err := http.NewRequest(http.MethodPost, reqUrl, strings.NewReader(params.Encode()))

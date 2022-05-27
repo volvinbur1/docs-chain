@@ -3,7 +3,9 @@ package central
 import (
 	"fmt"
 	"github.com/volvinbur1/docs-chain/src/analyzer"
+	"github.com/volvinbur1/docs-chain/src/blockchain"
 	"github.com/volvinbur1/docs-chain/src/common"
+	"github.com/volvinbur1/docs-chain/src/ipfs"
 	"github.com/volvinbur1/docs-chain/src/storage"
 	"log"
 	"sync"
