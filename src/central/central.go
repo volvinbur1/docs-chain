@@ -15,6 +15,7 @@ const sizeOfProcessingQueue = 1024
 type Worker struct {
 	dbManager              *storage.DatabaseManager
 	centralCh              chan common.ServiceTask
+	dispatcher             *analyzer.Dispatcher
 	processingPapersStatus sync.Map // key - paper id; value status
 }
 
@@ -22,6 +23,7 @@ func NewWorker() *Worker {
 	return &Worker{
 		dbManager:              storage.NewDatabaseManager(),
 		centralCh:              make(chan common.ServiceTask, sizeOfProcessingQueue),
+		dispatcher:             analyzer.NewDispatcher(),
 		processingPapersStatus: sync.Map{},
 	}
 }
@@ -112,7 +114,7 @@ func (w *Worker) handleNewPaperUpload(newPaper common.UploadedPaper) {
 }
 
 func (w *Worker) analyzePaperPdf(newPaper common.UploadedPaper) (common.AnalysisResult, error) {
-	pdfProcessor := analyzer.NewPaperPdfProcessor(newPaper.PaperFilePath, w.dbManager)
+	pdfProcessor := analyzer.NewPaperPdfProcessor(newPaper.PaperFilePath, w.dbManager, w.dispatcher)
 	if err := pdfProcessor.PrepareFile(newPaper.Id); err != nil {
 		return common.AnalysisResult{}, err
 	}

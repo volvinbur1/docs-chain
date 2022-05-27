@@ -15,22 +15,20 @@ import (
 	"strings"
 )
 
-var tagsToRemoveList = [...]string{"CC", "DT", "EX", "IN", "PDT", "TO", "UH", "WDT", "WP", "WP$", "WRB"}
-
-const specialChars = ".,!?@#$&+-*/=^%~(){}[]<>'`|\"\\"
-const shinglesCount = 7
-const shingleHashAlgorithm = "fnv32a"
-
 type PaperPdfProcessor struct {
 	paperFilePath string
 	canonizedText string
 	dbManager     *storage.DatabaseManager
+	compareResult chan CompareResult
+	dispatcher    *Dispatcher
 }
 
-func NewPaperPdfProcessor(paperFilePath string, dbManager *storage.DatabaseManager) *PaperPdfProcessor {
+func NewPaperPdfProcessor(paperFilePath string, dbManager *storage.DatabaseManager, dispatcher *Dispatcher) *PaperPdfProcessor {
 	return &PaperPdfProcessor{
 		paperFilePath: paperFilePath,
 		dbManager:     dbManager,
+		compareResult: make(chan CompareResult, workersCount),
+		dispatcher:    dispatcher,
 	}
 }
 
@@ -85,7 +83,16 @@ func (p *PaperPdfProcessor) MakeShingles(paperId string) error {
 }
 
 func (p *PaperPdfProcessor) PerformAnalyze() (common.AnalysisResult, error) {
-	return common.AnalysisResult{}, errors.New("not implemeted")
+	_, err := p.dbManager.GetAllPapersShingles()
+	if err != nil {
+		return common.AnalysisResult{}, err
+	}
+
+	return common.AnalysisResult{}, errors.New("not implemented")
+}
+
+func (p *PaperPdfProcessor) compareToOtherDoc(otherPaperShingles common.PaperShingles) {
+	//TODO: implement
 }
 
 // readPaperPdf reads a paper pdf plain text starting from 5 and to (n-2) pages
