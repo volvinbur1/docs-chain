@@ -17,13 +17,13 @@ const (
 )
 
 type UploadedPaper struct {
-	Id            string
-	NftName       string
-	NftSymbol     string
-	Topic         string
-	Description   string
-	Authors       []Author
-	PaperFilePath string
+	Id          string
+	NftName     string
+	NftSymbol   string
+	Topic       string
+	Description string
+	Authors     []Author
+	FilePath    string
 }
 
 type AnalysisResult struct {

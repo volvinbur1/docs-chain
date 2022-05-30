@@ -93,7 +93,7 @@ func (w *WebUIProcessor) parsePaperUploadRequest(request *http.Request) (common.
 		Surname:       request.Form.Get(uploaderSurnameFormKey),
 		ScienceDegree: request.Form.Get(uploaderScienceDegreeFormKey),
 	})
-	uploadedPaper.PaperFilePath, err = storeFileFromRequest(request, uploadedPaper.Id, paperFileFormKey)
+	uploadedPaper.FilePath, err = storeFileFromRequest(request, uploadedPaper.Id, paperFileFormKey)
 	return uploadedPaper, err
 }
 

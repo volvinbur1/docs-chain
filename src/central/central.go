@@ -143,7 +143,7 @@ func (w *Worker) savePaperInSystem(newPaper common.UploadedPaper, analysisResult
 }
 
 func (w *Worker) createPaperQrCode(newPaper common.UploadedPaper, analysisResult common.AnalysisResult) (string, error) {
-	ipfsCid, err := ipfs.AddFileToIpfs(newPaper.PaperFilePath)
+	ipfsCid, err := ipfs.AddFileToIpfs(newPaper.FilePath)
 	if err != nil {
 		return "", fmt.Errorf("adding paper %s pdf to ipfs failed. Error: %s", newPaper.Id, err)
 	}
