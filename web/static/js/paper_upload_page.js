@@ -4,6 +4,7 @@ const paperTopicId = "paperTopic"
 const paperDescriptionId = "paperDescription"
 const uploaderNameId = "uploaderName"
 const uploaderSurnameId = "uploaderSurname"
+const uploaderScienceDegreeId = "uploaderScienceDegree"
 const paperFileId = "paperFile"
 
 const uploadEndpoint = "/api/v1/paper-upload"
@@ -43,6 +44,7 @@ window.addEventListener("load", function () {
             formData.set(paperDescriptionId, document.getElementById(paperDescriptionId).value)
             formData.set(uploaderNameId, document.getElementById(uploaderNameId).value)
             formData.set(uploaderSurnameId, document.getElementById(uploaderSurnameId).value)
+            formData.set(uploaderScienceDegreeId, document.getElementById(uploaderScienceDegreeId).value)
             formData.set(paperFileId, document.getElementById(paperFileId).files[0])
 
             http.open('POST', uploadEndpoint, true)

@@ -20,14 +20,13 @@ const (
 )
 
 const (
-	paperTopicFormKey       = "paperTopic"
-	paperDescriptionFormKey = "paperDescription"
-	uploaderNameFormKey     = "uploaderName"
-	uploaderSurnameFormKey  = "uploaderSurname"
-	uploaderMiddleNameKey   = "uploaderMiddleName"
-	uploaderScienceDegree   = "uploaderScienceDegree"
-	paperFileFormKey        = "paperFile"
-	paperIdKey              = "paperId"
+	paperTopicFormKey            = "paperTopic"
+	paperDescriptionFormKey      = "paperDescription"
+	uploaderNameFormKey          = "uploaderName"
+	uploaderSurnameFormKey       = "uploaderSurname"
+	uploaderScienceDegreeFormKey = "uploaderScienceDegree"
+	paperFileFormKey             = "paperFile"
+	paperIdKey                   = "paperId"
 )
 
 type WebUIProcessor struct {
@@ -88,7 +87,12 @@ func (w *WebUIProcessor) parsePaperUploadRequest(request *http.Request) (common.
 	var uploadedPaper common.UploadedPaper
 	uploadedPaper.Id = xid.New().String()
 	uploadedPaper.Topic = request.Form.Get(paperTopicFormKey)
-	uploadedPaper.Authors = append(uploadedPaper.Authors, common.Author{Name: request.Form.Get(uploaderNameFormKey)})
+	uploadedPaper.Description = request.Form.Get(paperDescriptionFormKey)
+	uploadedPaper.Authors = append(uploadedPaper.Authors, common.Author{
+		Name:          request.Form.Get(uploaderNameFormKey),
+		Surname:       request.Form.Get(uploaderSurnameFormKey),
+		ScienceDegree: request.Form.Get(uploaderScienceDegreeFormKey),
+	})
 	uploadedPaper.PaperFilePath, err = storeFileFromRequest(request, uploadedPaper.Id, paperFileFormKey)
 	return uploadedPaper, err
 }
