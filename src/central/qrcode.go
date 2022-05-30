@@ -1,8 +1,6 @@
 package central
 
 import (
-	"bytes"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"github.com/skip2/go-qrcode"
@@ -23,10 +21,12 @@ func CreateNFTQRCode(metadata common.PaperMetadata) (string, error) {
 	qrCode.ForegroundColor = color.RGBA{R: 0xff, G: 0xd7, B: 0x00, A: 0xff}
 	qrCode.BackgroundColor = color.RGBA{R: 0x00, G: 0x57, B: 0xb7, A: 0xff}
 
-	var imageBuffer bytes.Buffer
-	err = qrCode.Write(256, &imageBuffer)
+	pathToQrCode := fmt.Sprintf("%s/%s/%s.png", common.LocalStoragePath, metadata.Id, metadata.PaperIpfsHash)
+
+	err = qrCode.WriteFile(256, pathToQrCode)
 	if err != nil {
 		return "", fmt.Errorf("qrCode image data writing. Error %s", err)
 	}
-	return base64.StdEncoding.EncodeToString(imageBuffer.Bytes()), nil
+
+	return pathToQrCode, nil
 }

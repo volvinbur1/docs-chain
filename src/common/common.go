@@ -12,7 +12,7 @@ var CloserHandler = func(closer io.Closer) {
 }
 
 const (
-	LocalStoragePath = "bin/storage"
+	LocalStoragePath = "nebin/storage"
 	PaperPdfFileName = "paper.pdf"
 )
 
@@ -123,3 +123,6 @@ type NftResponse struct {
 	MintRecoveryPhrase   string `json:"mintRecoveryPhrase" bson:"mintRecoveryPhrase"`
 	TransactionSignature string `json:"transactionSignature" bson:"transactionSignature"`
 }
+
+//IPFS
+const IpfsUrl = "https://ipfs.io/ipfs/"
