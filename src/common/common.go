@@ -12,19 +12,18 @@ var CloserHandler = func(closer io.Closer) {
 }
 
 const (
-	LocalStoragePath  = "bin/storage"
-	PaperPdfFileName  = "paper.pdf"
-	ReviewPdfFileName = "review.pdf"
+	LocalStoragePath = "bin/storage"
+	PaperPdfFileName = "paper.pdf"
 )
 
 type UploadedPaper struct {
-	Id             string
-	NftName        string
-	NftSymbol      string
-	Topic          string
-	Authors        []Author
-	PaperFilePath  string
-	ReviewFilePath string
+	Id            string
+	NftName       string
+	NftSymbol     string
+	Topic         string
+	Description   string
+	Authors       []Author
+	PaperFilePath string
 }
 
 type AnalysisResult struct {
@@ -47,7 +46,6 @@ type PaperMetadata struct {
 type Author struct {
 	Name          string `json:"name" bson:"name"`
 	Surname       string `json:"surname" bson:"surname"`
-	MiddleName    string `json:"middleName,omitempty" bson:"middleName,omitempty"`
 	ScienceDegree string `json:"scienceDegree" bson:"scienceDegree"`
 }
 

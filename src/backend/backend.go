@@ -14,16 +14,20 @@ import (
 )
 
 const (
-	paperUploadPageEndpoint   = "/paper-upload"
-	paperUploadStatusEndpoint = paperUploadPageEndpoint + "/status"
+	apiBaseEndpoint     = "/api/v1"
+	paperUploadEndpoint = apiBaseEndpoint + "/paper-upload"
+	paperStatusEndpoint = apiBaseEndpoint + "/paper-status"
 )
 
 const (
-	paperTopicFormKey   = "paperTopic"
-	uploaderNameFormKey = "uploaderName"
-	reviewFileFormKey   = "reviewFile"
-	paperFileFormKey    = "paperFile"
-	paperIdKey          = "paperId"
+	paperTopicFormKey       = "paperTopic"
+	paperDescriptionFormKey = "paperDescription"
+	uploaderNameFormKey     = "uploaderName"
+	uploaderSurnameFormKey  = "uploaderSurname"
+	uploaderMiddleNameKey   = "uploaderMiddleName"
+	uploaderScienceDegree   = "uploaderScienceDegree"
+	paperFileFormKey        = "paperFile"
+	paperIdKey              = "paperId"
 )
 
 type WebUIProcessor struct {
@@ -35,15 +39,17 @@ func NewWebUIProcessor(centralWorker *central.Worker) *WebUIProcessor {
 
 	http.Handle("/", http.FileServer(http.Dir("web/html")))
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("web/static"))))
-	http.HandleFunc(paperUploadPageEndpoint, processor.HandlePaperUploadRequest)
-	http.HandleFunc(paperUploadStatusEndpoint, processor.HandlePaperUploadStatus)
+	http.HandleFunc("/paper-upload/", func(writer http.ResponseWriter, request *http.Request) {
+		http.ServeFile(writer, request, "web/html/paper_upload_page.html")
+	})
+
+	http.HandleFunc(paperUploadEndpoint, processor.HandlePaperUploadRequest)
+	http.HandleFunc(paperStatusEndpoint, processor.HandlePaperStatus)
 	return processor
 }
 
 func (w *WebUIProcessor) HandlePaperUploadRequest(writer http.ResponseWriter, request *http.Request) {
 	switch request.Method {
-	case http.MethodGet:
-		http.ServeFile(writer, request, "web/html/paper_upload_page.html")
 	case http.MethodPost:
 		newPaper, err := w.parsePaperUploadRequest(request)
 		if err != nil {
@@ -58,7 +64,7 @@ func (w *WebUIProcessor) HandlePaperUploadRequest(writer http.ResponseWriter, re
 	}
 }
 
-func (w *WebUIProcessor) HandlePaperUploadStatus(writer http.ResponseWriter, request *http.Request) {
+func (w *WebUIProcessor) HandlePaperStatus(writer http.ResponseWriter, request *http.Request) {
 	switch request.Method {
 	case http.MethodGet:
 		paperId := request.URL.Query().Get(paperIdKey)
@@ -84,10 +90,6 @@ func (w *WebUIProcessor) parsePaperUploadRequest(request *http.Request) (common.
 	uploadedPaper.Topic = request.Form.Get(paperTopicFormKey)
 	uploadedPaper.Authors = append(uploadedPaper.Authors, common.Author{Name: request.Form.Get(uploaderNameFormKey)})
 	uploadedPaper.PaperFilePath, err = storeFileFromRequest(request, uploadedPaper.Id, paperFileFormKey)
-	if err != nil {
-		return common.UploadedPaper{}, err
-	}
-	uploadedPaper.ReviewFilePath, err = storeFileFromRequest(request, uploadedPaper.Id, reviewFileFormKey)
 	return uploadedPaper, err
 }
 
@@ -134,13 +136,7 @@ func storeFileFromRequest(request *http.Request, uploadId, formKey string) (stri
 		return "", fmt.Errorf("failed to create all file storega path subdirs: %s", err)
 	}
 
-	var localFilePath string
-	if formKey == paperFileFormKey {
-		localFilePath = filepath.Join(common.LocalStoragePath, uploadId, common.PaperPdfFileName)
-	} else if formKey == reviewFileFormKey {
-		localFilePath = filepath.Join(common.LocalStoragePath, uploadId, common.ReviewPdfFileName)
-	}
-
+	localFilePath := filepath.Join(common.LocalStoragePath, uploadId, common.PaperPdfFileName)
 	localFile, err := os.OpenFile(localFilePath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0664)
 	if err != nil {
 		return "", fmt.Errorf("failed to create file %s Error: %s", localFilePath, err)
