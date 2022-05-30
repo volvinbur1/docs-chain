@@ -9,20 +9,28 @@
 <div id="paperUploadView" class="paperUploadView">
     <form id="uploadForm" enctype="multipart/form-data" method="post">
         <p>
-            <label for="uploaderName">Enter your name:</label>
+            <label for="paperTopic">Enter paper topic:</label>
+            <input type="text" id="paperTopic" name="paperTopic">
+        </p>
+        <p>
+            <label for="paperDescription">Enter short paper description:</label>
+            <input type="text" id="paperDescription" name="paperDescription">
+        </p>
+        <p>
+            <label for="uploaderName">Enter author name:</label>
             <input type="text" id="uploaderName" name="uploaderName">
         </p>
         <p>
-            <label for="paperTopic">Enter your paper topic:</label>
-            <input type="text" id="paperTopic" name="paperTopic">
+            <label for="uploaderSurname">Enter author surname:</label>
+            <input type="text" id="uploaderSurname" name="uploaderSurname">
+        </p>
+        <p>
+            <label for="uploaderScienceDegree">Enter author science degree:</label>
+            <input type="text" id="uploaderScienceDegree" name="uploaderScienceDegree">
         </p>
         <p>
             <label>Upload your paper file:</label>
             <input type="file" id="paperFile" name="paperFile" accept="application/pdf" required>
-        </p>
-        <p>
-            <label>Upload your paper review file:</label>
-            <input type="file" id="reviewFile" name="reviewFile" accept="application/pdf" required>
         </p>
         <input type="submit" value="Upload">
     </form>

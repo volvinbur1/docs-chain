@@ -27,7 +27,7 @@ type PaperPdfProcessor struct {
 func NewPaperPdfProcessor(newPaper common.UploadedPaper, dbManager *storage.DatabaseManager, dispatcher *Dispatcher) *PaperPdfProcessor {
 	return &PaperPdfProcessor{
 		paperId:         newPaper.Id,
-		filePath:        newPaper.PaperFilePath,
+		filePath:        newPaper.FilePath,
 		dbManager:       dbManager,
 		compareResultCh: make(chan CompareResult, workersCount),
 		dispatcher:      dispatcher,
