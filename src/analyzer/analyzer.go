@@ -19,16 +19,16 @@ type PaperPdfProcessor struct {
 	filePath        string
 	canonizedText   string
 	paperShingles   common.PaperShingles
-	dbManager       *storage.DatabaseManager
+	database        storage.DatabaseInterface
 	compareResultCh chan CompareResult
 	dispatcher      *Dispatcher
 }
 
-func NewPaperPdfProcessor(newPaper common.UploadedPaper, dbManager *storage.DatabaseManager, dispatcher *Dispatcher) *PaperPdfProcessor {
+func NewPaperPdfProcessor(newPaper common.UploadedPaper, database storage.DatabaseInterface, dispatcher *Dispatcher) *PaperPdfProcessor {
 	return &PaperPdfProcessor{
 		paperId:         newPaper.Id,
-		filePath:        newPaper.PaperFilePath,
-		dbManager:       dbManager,
+		filePath:        newPaper.FilePath,
+		database:        database,
 		compareResultCh: make(chan CompareResult, workersCount),
 		dispatcher:      dispatcher,
 	}
@@ -83,13 +83,13 @@ func (p *PaperPdfProcessor) MakeShingles() error {
 	}
 	log.Printf("Shingles hashes for paper %s has been created.", p.paperId)
 
-	return p.dbManager.AddPaperShingles(p.paperShingles)
+	return p.database.AddPaperShingles(p.paperShingles)
 }
 
 func (p *PaperPdfProcessor) PerformAnalyze() (common.AnalysisResult, error) {
 	log.Printf("Paper %s analysis started...", p.paperId)
 
-	papersShinglesList, err := p.dbManager.GetAllPapersShingles()
+	papersShinglesList, err := p.database.GetAllPapersShingles()
 	if err != nil {
 		return common.AnalysisResult{}, err
 	}
@@ -168,20 +168,30 @@ func readPaperPdf(path string) (string, error) {
 	}
 
 	var buffer bytes.Buffer
-	for pageNumber := 5; pageNumber < pdfReader.NumPage()-2; pageNumber++ {
-		page := pdfReader.Page(pageNumber)
-		if page.V.IsNull() {
-			log.Printf("Page %d from %s reading failed.", pageNumber, path)
-			continue
-		}
-
-		plainTextStr, err := page.GetPlainText(nil)
-		if err != nil {
-			log.Printf("Getting plain text from page %d from %s failed. Error: %s", pageNumber, path, err)
-			continue
-		}
-		buffer.WriteString(plainTextStr)
+	b, err := pdfReader.GetPlainText()
+	if err != nil {
+		log.Println(err)
+		return "", err
 	}
+	_, err = buffer.ReadFrom(b)
+	if err != nil {
+		log.Println(err)
+		return "", err
+	}
+	//for pageNumber := 2; pageNumber < pdfReader.NumPage()-2; pageNumber++ {
+	//	page := pdfReader.Page(pageNumber)
+	//	if page.V.IsNull() {
+	//		log.Printf("Page %d from %s reading failed.", pageNumber, path)
+	//		continue
+	//	}
+	//
+	//	plainTextStr, err := page.GetPlainText(nil)
+	//	if err != nil {
+	//		log.Printf("Getting plain text from page %d from %s failed. Error: %s", pageNumber, path, err)
+	//		continue
+	//	}
+	//	buffer.WriteString(plainTextStr)
+	//}
 
 	return buffer.String(), nil
 }
