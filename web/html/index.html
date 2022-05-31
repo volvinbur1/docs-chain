@@ -5,8 +5,108 @@
     <title>DocsChain</title>
 </head>
 <body>
-<form action="/paper-upload" method="get"><button type="submit">Upload paper</button></form>
-<br>
-<button type="button">Check paper NFT</button>
+<div id="buttonsContainer" class="buttonsContainer">
+    <button id="addPaperFormButton" class="addPaperFormButton" type="button" onclick="showAppPaperForm()">Add new file</button>
+    <button id="getPaperFormButton" class="getPaperFormButton" type="button" onclick="showGetPaperForm()">Get file</button>
+    <button id="searchForPaperFormButton" class="searchForPaperFormButton" type="button" onclick="showSearchForPaperForm()">Get file</button>
+</div>
+
+<div id="appPaperFormContainer" class="addPaperFormContainer" style="display: none;">
+    <div id="paperUploadView" class="paperUploadView" style="display: none;">
+        <form id="uploadForm">
+            <p>
+                <label for="paperFile">Upload your paper file:</label>
+                <input type="file" id="paperFile" name="paperFile" accept="application/pdf">
+            </p>
+            <p>
+                <label for="paperTopic">Enter paper topic:</label>
+                <input type="text" id="paperTopic" name="paperTopic">
+            </p>
+            <p>
+                <label for="paperDescription">Enter short paper description:</label>
+                <input type="text" id="paperDescription" name="paperDescription">
+            </p>
+
+            <button id="addAuthorButton" onclick="addAuthor()">+</button>
+            <label id="nameLabel">Enter author name:</label>
+            <div id="nameDiv"></div>
+
+            <label id="surnameLabel">Enter author surname:</label>
+            <div id="surnameDiv"></div>
+
+            <label id="degreeLabel">Enter author science degree:</label>
+            <div id="degreeDiv"></div>
+            <button id="paperUploadButton" class="paperUploadButton" type="submit">Upload</button>
+        </form>
+    </div>
+
+    <div id="loadingView" class="loadingView" style="display: none;">
+        <div class="loadingIndicator"></div>
+        Please wait while the server finishes processing.
+        <br>
+        It might take up to 10 minutes.
+        <br>
+        <b>Do not close this tab</b>
+    </div>
+
+    <div id="addPaperResultView" class="addPaperResultView" style="display: none;">
+        <p>
+            The paper processing finished
+            <span style="color: #40ff2f;">successfully</span>.
+            <br>
+            The NFT of your work is bellow.
+        </p>
+        <div id="resultingNFW" class="resultingNFW">no-data</div>
+    </div>
+</div>
+
+<div id="getPaperFormContainer" class="getPaperFormContainer" style="display: none;">
+    <div id="paperNftEnterView" class="paperNftEnterView" style="display: none;">
+        <p>
+            <label for="getNftText">Enter paper to load it:</label>
+            <input id="getNftText" name="getNftText" type="text" placeholder="paper nft">
+        </p>
+    </div>
+
+    <div id="loadingView" class="loadingView" style="display: none;">
+        <div class="loadingIndicator"></div>
+        Please wait while the server finishes processing.
+        <br>
+        It might take up to 10 minutes.
+        <br>
+        <b>Do not close this tab</b>
+    </div>
+
+    <div id="getPaperResultView" class="getPaperResultView" style="display: none;">
+
+    </div>
+</div>
+
+<div id="searchForPaperFormContainer" class="searchForPaperFormContainer" style="display: none;">
+    <div id="searchTextEnterView" class="searchTextEnterView" style="display: none;">
+        <p>
+            <label for="searchText">Enter text to search for paper:</label>
+            <input id="searchText" name="searchText" type="text" placeholder="topic, author, ipfs hash">
+        </p>
+    </div>
+
+    <div id="loadingView" class="loadingView" style="display: none;">
+        <div class="loadingIndicator"></div>
+        Please wait while the server finishes processing.
+        <br>
+        It might take up to 10 minutes.
+        <br>
+        <b>Do not close this tab</b>
+    </div>
+
+    <div id="searchForPaperResultView" class="searchForPaperResultView" style="display: none;">
+
+    </div>
+
+</div>
+
+
+<script src="../static/js/index.js"></script>
 </body>
+
 </html>
