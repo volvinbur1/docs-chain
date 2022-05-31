@@ -129,12 +129,12 @@ func (w *Worker) analyzePaperPdf(newPaper common.UploadedPaper) (common.Analysis
 }
 
 func (w *Worker) savePaperInSystem(newPaper common.UploadedPaper, analysisResult common.AnalysisResult) error {
-	qrCode, err := w.createPaperQrCode(newPaper, analysisResult)
+	qrCodePath, err := w.createPaperQrCode(newPaper, analysisResult)
 	if err != nil {
 		return err
 	}
 
-	nftImageUrl, err := w.blockChain.GetImageUrl(qrCode)
+	nftImageUrl, err := blockchain.GetImageUrl(qrCodePath)
 	if err != nil {
 		return err
 	}

@@ -14,7 +14,6 @@ func New() *BlockChain {
 		Mnemonic:       getEnv("MNEMONIC", ""),
 		BlockApiKey:    getEnv("BLOCK_API_KEY", ""),
 		BlockApiSecret: getEnv("BLOCK_API_SECRET", ""),
-		ImgUrlApiKey:   getEnv("IMG_URL_API_KEY", ""),
 	}
 }
 
