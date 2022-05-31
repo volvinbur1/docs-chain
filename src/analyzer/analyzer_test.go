@@ -21,4 +21,9 @@ func TestPaperPdfProcessor_PrepareFile(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error is expected not ot be nil")
 	}
+
+	err = processor.MakeShingles()
+	if err != nil {
+		t.Errorf("Error is expected not ot be nil")
+	}
 }
