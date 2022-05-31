@@ -3,17 +3,17 @@ module github.com/volvinbur1/docs-chain
 go 1.18
 
 require (
+	code.sajari.com/docconv v1.2.0
 	github.com/gertd/go-pluralize v0.2.1
+	github.com/golang/mock v1.6.0
 	github.com/ipfs/go-ipfs-api v0.3.0
 	github.com/jdkato/prose/v2 v2.0.0
-	github.com/ledongthuc/pdf v0.0.0-20220302134840-0c2507a12d80
 	github.com/rs/xid v1.4.0
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	go.mongodb.org/mongo-driver v1.9.1
 )
 
 require (
-	code.sajari.com/docconv v1.2.0 // indirect
 	github.com/JalfResi/justext v0.0.0-20170829062021-c0282dea7198 // indirect
 	github.com/PuerkitoBio/goquery v1.5.1 // indirect
 	github.com/advancedlogic/GoOse v0.0.0-20191112112754-e742535969c1 // indirect
@@ -30,7 +30,6 @@ require (
 	github.com/go-resty/resty/v2 v2.3.0 // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/golang/mock v1.6.0 // indirect
 	github.com/golang/protobuf v1.4.2 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/go-cmp v0.5.7 // indirect
@@ -73,12 +72,10 @@ require (
 	github.com/xdg-go/stringprep v1.0.2 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20181117223130-1be2e3e5546d // indirect
 	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e // indirect
-	golang.org/x/mod v0.4.2 // indirect
 	golang.org/x/net v0.0.0-20211112202133-69e39bad7dc2 // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
 	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect
 	golang.org/x/text v0.3.7 // indirect
-	golang.org/x/tools v0.1.1 // indirect
 	golang.org/x/xerrors v0.0.0-20220411194840-2f41105eb62f // indirect
 	gonum.org/v1/gonum v0.7.0 // indirect
 	google.golang.org/protobuf v1.23.0 // indirect

@@ -46,13 +46,13 @@ func (p *PaperPdfProcessor) PrepareFile() error {
 	}
 	log.Printf("Paper %s punctuation from text has been removed.", p.paperId)
 
-	paperPlainText, err = performPosTaggingAnalyze(paperPlainText)
+	paperPlainText = truncateEdges(paperPlainText)
+	p.canonizedText, err = performPosTaggingAnalyze(paperPlainText)
 	if err != nil {
 		return err
 	}
 	log.Printf("Paper %s text pos-tagging analyze performed successfully.", p.paperId)
 
-	p.canonizedText = removePlural(paperPlainText)
 	return nil
 }
 
@@ -185,7 +185,13 @@ func performPosTaggingAnalyze(text string) (string, error) {
 	docTokens := make([]prose.Token, len(doc.Tokens()))
 	copy(docTokens, doc.Tokens())
 
+	singleMaker := pluralize.NewClient()
 	for idx := 0; idx < len(docTokens); idx++ {
+		if strings.HasPrefix(docTokens[idx].Tag, nounPosTag) {
+			docTokens[idx].Text = singleMaker.Singular(docTokens[idx].Text)
+			continue
+		}
+
 		for _, removeTag := range tagsToRemoveList {
 			if docTokens[idx].Tag == removeTag {
 				docTokens = append(docTokens[:idx], docTokens[idx+1:]...)
@@ -203,16 +209,6 @@ func performPosTaggingAnalyze(text string) (string, error) {
 	return sb.String(), nil
 }
 
-func removePlural(text string) string {
-	words := strings.Fields(text)
-	singleMaker := pluralize.NewClient()
-	for idx, word := range words {
-		words[idx] = singleMaker.Singular(word)
-	}
-
-	return strings.Join(words, " ")
-}
-
 func removeDuplicate(slice []uint32) []uint32 {
 	allKeys := make(map[uint32]interface{})
 	var list []uint32
@@ -223,4 +219,13 @@ func removeDuplicate(slice []uint32) []uint32 {
 		}
 	}
 	return list
+}
+
+func truncateEdges(text string) string {
+	words := strings.Fields(text)
+	if len(words) < (frontEdgeCutCount+backEdgeCutCount)*3 {
+		return text
+	}
+
+	return strings.Join(words[frontEdgeCutCount:len(words)-backEdgeCutCount], " ")
 }
