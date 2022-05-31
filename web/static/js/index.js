@@ -1,22 +1,3 @@
-// central containers ids
-const appPaperFormContainerId = 'appPaperFormContainer'
-const getPaperFormContainerId = 'getPaperFormContainer'
-const searchForPaperFormContainerId = 'searchForPaperFormContainer'
-
-// add paper containers ids
-const paperUploadViewId = 'paperUploadView'
-const addPaperResultViewId = "addPaperResultView"
-
-// get paper containers ids
-const paperNftEnterViewId = 'paperNftEnterView'
-const getPaperResultViewId = 'getPaperResultView'
-
-// search for paper containers ids
-const searchTextEnterViewId = 'searchTextEnterView'
-const searchForPaperResultId = 'searchForPaperResultView'
-
-const loadingViewId = 'loadingView'
-
 const displayStyleHide = 'none'
 const displayStyleShow = 'block'
 
@@ -28,13 +9,13 @@ const authorDegreeBaseId = 'authorDegree'
 function showAppPaperForm() {
     console.log("Show add paper form")
 
-    document.getElementById(appPaperFormContainerId).style.display = displayStyleShow;
-    document.getElementById(getPaperFormContainerId).style.display = displayStyleHide;
-    document.getElementById(searchForPaperFormContainerId).style.display = displayStyleHide;
+    document.getElementById('appPaperFormContainer').style.display = displayStyleShow;
+    document.getElementById('getPaperFormContainer').style.display = displayStyleHide;
+    document.getElementById('searchForPaperFormContainer').style.display = displayStyleHide;
 
-    document.getElementById(paperUploadViewId).style.display = displayStyleShow;
-    document.getElementById(loadingViewId).style.display = displayStyleHide;
-    document.getElementById(addPaperResultViewId).style.display = displayStyleHide;
+    document.getElementById('paperUploadView').style.display = displayStyleShow;
+    document.getElementById('loadingView').style.display = displayStyleHide;
+    document.getElementById('addPaperResultView').style.display = displayStyleHide;
 
     generateAuthorFields()
 }
@@ -42,25 +23,25 @@ function showAppPaperForm() {
 function showGetPaperForm() {
     console.log("Show get paper form")
 
-    document.getElementById(appPaperFormContainerId).style.display = displayStyleHide;
-    document.getElementById(getPaperFormContainerId).style.display = displayStyleShow;
-    document.getElementById(searchForPaperFormContainerId).style.display = displayStyleHide;
+    document.getElementById('appPaperFormContainer').style.display = displayStyleHide;
+    document.getElementById('getPaperFormContainer').style.display = displayStyleShow;
+    document.getElementById('searchForPaperFormContainer').style.display = displayStyleHide;
 
-    document.getElementById(paperNftEnterViewId).style.display = displayStyleShow;
-    document.getElementById(loadingViewId).style.display = displayStyleHide;
-    document.getElementById(getPaperResultViewId).style.display = displayStyleHide;
+    document.getElementById('paperNftEnterView').style.display = displayStyleShow;
+    document.getElementById('loadingView').style.display = displayStyleHide;
+    document.getElementById('getPaperResultView').style.display = displayStyleHide;
 }
 
 function showSearchForPaperForm() {
     console.log("Show search for paper form")
 
-    document.getElementById(appPaperFormContainerId).style.display = displayStyleHide;
-    document.getElementById(getPaperFormContainerId).style.display = displayStyleHide;
-    document.getElementById(searchForPaperFormContainerId).style.display = displayStyleShow;
+    document.getElementById('appPaperFormContainer').style.display = displayStyleHide;
+    document.getElementById('getPaperFormContainer').style.display = displayStyleHide;
+    document.getElementById('searchForPaperFormContainer').style.display = displayStyleShow;
 
-    document.getElementById(searchTextEnterViewId).style.display = displayStyleShow;
-    document.getElementById(loadingViewId).style.display = displayStyleHide;
-    document.getElementById(searchForPaperResultId).style.display = displayStyleHide;
+    document.getElementById('searchTextEnterView').style.display = displayStyleShow;
+    document.getElementById('loadingView').style.display = displayStyleHide;
+    document.getElementById('searchForPaperResultView').style.display = displayStyleHide;
 }
 
 function addAuthor() {
