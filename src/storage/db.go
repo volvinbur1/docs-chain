@@ -21,6 +21,14 @@ const (
 	papersNftCollection      = "papersNft"
 )
 
+type DatabaseInterface interface {
+	AddNewPaper(newPaper common.PaperMetadata) error
+	AddPaperShingles(paperShingles common.PaperShingles) error
+	GetAllPapersShingles() ([]common.PaperShingles, error)
+	AddPaperNft(paperNft common.NftResponse) error
+	GetPaperNftById(paperId string) (string, error)
+}
+
 type DatabaseManager struct {
 	client *mongo.Client
 }

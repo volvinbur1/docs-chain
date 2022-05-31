@@ -1,11 +1,10 @@
 package analyzer
 
 import (
-	"bytes"
+	"code.sajari.com/docconv"
 	"fmt"
 	"github.com/gertd/go-pluralize"
 	"github.com/jdkato/prose/v2"
-	"github.com/ledongthuc/pdf"
 	"github.com/volvinbur1/docs-chain/src/common"
 	"github.com/volvinbur1/docs-chain/src/storage"
 	"hash/fnv"
@@ -19,41 +18,41 @@ type PaperPdfProcessor struct {
 	filePath        string
 	canonizedText   string
 	paperShingles   common.PaperShingles
-	dbManager       *storage.DatabaseManager
+	database        storage.DatabaseInterface
 	compareResultCh chan CompareResult
 	dispatcher      *Dispatcher
 }
 
-func NewPaperPdfProcessor(newPaper common.UploadedPaper, dbManager *storage.DatabaseManager, dispatcher *Dispatcher) *PaperPdfProcessor {
+func NewPaperPdfProcessor(newPaper common.UploadedPaper, database storage.DatabaseInterface, dispatcher *Dispatcher) *PaperPdfProcessor {
 	return &PaperPdfProcessor{
 		paperId:         newPaper.Id,
 		filePath:        newPaper.FilePath,
-		dbManager:       dbManager,
+		database:        database,
 		compareResultCh: make(chan CompareResult, workersCount),
 		dispatcher:      dispatcher,
 	}
 }
 
 func (p *PaperPdfProcessor) PrepareFile() error {
-	paperPlainText, err := readPaperPdf(p.filePath)
+	readResult, err := docconv.ConvertPath(p.filePath)
 	if err != nil {
-		return err
+		return fmt.Errorf("error when reading pdf for %s. Error: %s", p.paperId, err)
 	}
 	log.Printf("Paper %s plain text read successfully.", p.paperId)
 
-	paperPlainText, err = removePunctuation(paperPlainText)
+	paperPlainText, err := removePunctuation(readResult.Body)
 	if err != nil {
 		return err
 	}
 	log.Printf("Paper %s punctuation from text has been removed.", p.paperId)
 
-	paperPlainText, err = performPosTaggingAnalyze(paperPlainText)
+	paperPlainText = truncateEdges(paperPlainText)
+	p.canonizedText, err = performPosTaggingAnalyze(paperPlainText)
 	if err != nil {
 		return err
 	}
 	log.Printf("Paper %s text pos-tagging analyze performed successfully.", p.paperId)
 
-	p.canonizedText = removePlural(paperPlainText)
 	return nil
 }
 
@@ -83,13 +82,13 @@ func (p *PaperPdfProcessor) MakeShingles() error {
 	}
 	log.Printf("Shingles hashes for paper %s has been created.", p.paperId)
 
-	return p.dbManager.AddPaperShingles(p.paperShingles)
+	return p.database.AddPaperShingles(p.paperShingles)
 }
 
 func (p *PaperPdfProcessor) PerformAnalyze() (common.AnalysisResult, error) {
 	log.Printf("Paper %s analysis started...", p.paperId)
 
-	papersShinglesList, err := p.dbManager.GetAllPapersShingles()
+	papersShinglesList, err := p.database.GetAllPapersShingles()
 	if err != nil {
 		return common.AnalysisResult{}, err
 	}
@@ -159,47 +158,20 @@ func (p *PaperPdfProcessor) calculateAnalysisResult(papersToCompareCnt int) (com
 	return analysisResult, nil
 }
 
-// readPaperPdf reads a paper pdf plain text starting from 5 and to (n-2) pages
-func readPaperPdf(path string) (string, error) {
-	file, pdfReader, err := pdf.Open(path)
-	defer common.CloserHandler(file)
-	if err != nil {
-		return "", fmt.Errorf("%s file oped failed. Error: %s", path, err)
-	}
-
-	var buffer bytes.Buffer
-	for pageNumber := 5; pageNumber < pdfReader.NumPage()-2; pageNumber++ {
-		page := pdfReader.Page(pageNumber)
-		if page.V.IsNull() {
-			log.Printf("Page %d from %s reading failed.", pageNumber, path)
-			continue
-		}
-
-		plainTextStr, err := page.GetPlainText(nil)
-		if err != nil {
-			log.Printf("Getting plain text from page %d from %s failed. Error: %s", pageNumber, path, err)
-			continue
-		}
-		buffer.WriteString(plainTextStr)
-	}
-
-	return buffer.String(), nil
-}
-
 func removePunctuation(text string) (string, error) {
 	text = strings.ToLower(text)
 
-	reg, err := regexp.Compile("[^a-zA-Z\\d ]+ ")
+	reg, err := regexp.Compile(`[^a-zA-Z\d ]+`)
 	if err != nil {
 		return "", fmt.Errorf("alpha-numerical regural expression instance creation failed. Error %s", err)
 	}
 	newText := reg.ReplaceAllString(text, "")
 
-	reg, err = regexp.Compile(" +(?= )")
+	reg, err = regexp.Compile(`\s+`)
 	if err != nil {
 		return "", fmt.Errorf("space-removal regural expression instance creation failed. Error %s", err)
 	}
-	newText = reg.ReplaceAllString(newText, "")
+	newText = reg.ReplaceAllString(newText, " ")
 
 	return newText, nil
 }
@@ -210,13 +182,19 @@ func performPosTaggingAnalyze(text string) (string, error) {
 		return "", fmt.Errorf("prose document instance from paper pdf plain text. Error: %s", err)
 	}
 
-	docEntities := make([]prose.Entity, len(doc.Entities()))
-	copy(docEntities, doc.Entities())
+	docTokens := make([]prose.Token, len(doc.Tokens()))
+	copy(docTokens, doc.Tokens())
 
-	for idx := 0; idx < len(docEntities); idx++ {
+	singleMaker := pluralize.NewClient()
+	for idx := 0; idx < len(docTokens); idx++ {
+		if strings.HasPrefix(docTokens[idx].Tag, nounPosTag) {
+			docTokens[idx].Text = singleMaker.Singular(docTokens[idx].Text)
+			continue
+		}
+
 		for _, removeTag := range tagsToRemoveList {
-			if docEntities[idx].Label == removeTag {
-				docEntities = append(docEntities[:idx], docEntities[idx+1:]...)
+			if docTokens[idx].Tag == removeTag {
+				docTokens = append(docTokens[:idx], docTokens[idx+1:]...)
 				idx--
 				break
 			}
@@ -224,20 +202,11 @@ func performPosTaggingAnalyze(text string) (string, error) {
 	}
 
 	var sb strings.Builder
-	for _, entity := range docEntities {
+	for _, entity := range docTokens {
 		sb.WriteString(entity.Text)
+		sb.WriteString(" ")
 	}
 	return sb.String(), nil
-}
-
-func removePlural(text string) string {
-	words := strings.Fields(text)
-	singleMaker := pluralize.NewClient()
-	for idx, word := range words {
-		words[idx] = singleMaker.Singular(word)
-	}
-
-	return strings.Join(words, " ")
 }
 
 func removeDuplicate(slice []uint32) []uint32 {
@@ -250,4 +219,13 @@ func removeDuplicate(slice []uint32) []uint32 {
 		}
 	}
 	return list
+}
+
+func truncateEdges(text string) string {
+	words := strings.Fields(text)
+	if len(words) < (frontEdgeCutCount+backEdgeCutCount)*3 {
+		return text
+	}
+
+	return strings.Join(words[frontEdgeCutCount:len(words)-backEdgeCutCount], " ")
 }
