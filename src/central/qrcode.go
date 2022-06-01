@@ -21,7 +21,7 @@ func CreateNFTQRCode(metadata common.PaperMetadata) (string, error) {
 	qrCode.ForegroundColor = color.RGBA{R: 0xff, G: 0xd7, B: 0x00, A: 0xff}
 	qrCode.BackgroundColor = color.RGBA{R: 0x00, G: 0x57, B: 0xb7, A: 0xff}
 
-	pathToQrCode := fmt.Sprintf("%s/%s/%s.png", common.LocalStoragePath, metadata.Id, metadata.PaperIpfsHash)
+	pathToQrCode := fmt.Sprintf("%s/%s/%s.png", common.LocalStoragePath, "metadata.Id", metadata.IpfsHash)
 
 	err = qrCode.WriteFile(256, pathToQrCode)
 	if err != nil {

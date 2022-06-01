@@ -13,21 +13,8 @@ import (
 	"path/filepath"
 )
 
-const (
-	apiBaseEndpoint     = "/api/v1"
-	paperUploadEndpoint = apiBaseEndpoint + "/paper-upload"
-	paperStatusEndpoint = apiBaseEndpoint + "/paper-status"
-)
-
-const (
-	paperTopicFormKey            = "paperTopic"
-	paperDescriptionFormKey      = "paperDescription"
-	uploaderNameFormKey          = "uploaderName"
-	uploaderSurnameFormKey       = "uploaderSurname"
-	uploaderScienceDegreeFormKey = "uploaderScienceDegree"
-	paperFileFormKey             = "paperFile"
-	paperIdKey                   = "paperId"
-)
+//TODO: remove after tests
+var reqCount = 0
 
 type WebUIProcessor struct {
 	centralWorker *central.Worker
@@ -38,16 +25,13 @@ func NewWebUIProcessor(centralWorker *central.Worker) *WebUIProcessor {
 
 	http.Handle("/", http.FileServer(http.Dir("web/html")))
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("web/static"))))
-	http.HandleFunc("/paper-upload/", func(writer http.ResponseWriter, request *http.Request) {
-		http.ServeFile(writer, request, "web/html/paper_upload_page.html")
-	})
 
-	http.HandleFunc(paperUploadEndpoint, processor.HandlePaperUploadRequest)
-	http.HandleFunc(paperStatusEndpoint, processor.HandlePaperStatus)
+	http.HandleFunc(addPaperEndpoint, processor.HandleAddPaperRequest)
+	http.HandleFunc(getPaperStatusEndpoint, processor.HandleGetPaperStatusRequest)
 	return processor
 }
 
-func (w *WebUIProcessor) HandlePaperUploadRequest(writer http.ResponseWriter, request *http.Request) {
+func (w *WebUIProcessor) HandleAddPaperRequest(writer http.ResponseWriter, request *http.Request) {
 	switch request.Method {
 	case http.MethodPost:
 		newPaper, err := w.parsePaperUploadRequest(request)
@@ -63,9 +47,10 @@ func (w *WebUIProcessor) HandlePaperUploadRequest(writer http.ResponseWriter, re
 	}
 }
 
-func (w *WebUIProcessor) HandlePaperStatus(writer http.ResponseWriter, request *http.Request) {
+func (w *WebUIProcessor) HandleGetPaperStatusRequest(writer http.ResponseWriter, request *http.Request) {
 	switch request.Method {
 	case http.MethodGet:
+		reqCount++
 		paperId := request.URL.Query().Get(paperIdKey)
 		log.Println("New get paper status request. Paper id:", paperId)
 		w.checkPaperStatus(paperId, writer)
@@ -79,6 +64,7 @@ func (w *WebUIProcessor) ListenHttp() error {
 }
 
 func (w *WebUIProcessor) parsePaperUploadRequest(request *http.Request) (common.UploadedPaper, error) {
+	reqCount = 0
 	err := request.ParseMultipartForm(32 << 20)
 	if err != nil {
 		return common.UploadedPaper{}, fmt.Errorf("request form parse error: %s", err)
@@ -88,30 +74,69 @@ func (w *WebUIProcessor) parsePaperUploadRequest(request *http.Request) (common.
 	uploadedPaper.Id = xid.New().String()
 	uploadedPaper.Topic = request.Form.Get(paperTopicFormKey)
 	uploadedPaper.Description = request.Form.Get(paperDescriptionFormKey)
-	uploadedPaper.Authors = append(uploadedPaper.Authors, common.Author{
-		Name:          request.Form.Get(uploaderNameFormKey),
-		Surname:       request.Form.Get(uploaderSurnameFormKey),
-		ScienceDegree: request.Form.Get(uploaderScienceDegreeFormKey),
-	})
+
+	for i := 1; i <= 3; i++ {
+		name := request.Form.Get(fmt.Sprint(authorNameFormKey, i))
+		surname := request.Form.Get(fmt.Sprint(authorSurnameFormKey, i))
+		degree := request.Form.Get(fmt.Sprint(authorDegreeFormKey, i))
+
+		if len(name) == 0 && len(surname) == 0 && len(degree) == 0 {
+			continue
+		}
+
+		uploadedPaper.Authors = append(uploadedPaper.Authors, common.Author{
+			Name:          name,
+			Surname:       surname,
+			ScienceDegree: degree,
+		})
+	}
+
 	uploadedPaper.FilePath, err = storeFileFromRequest(request, uploadedPaper.Id, paperFileFormKey)
 	return uploadedPaper, err
 }
 
 func (w *WebUIProcessor) checkPaperStatus(paperId string, writer http.ResponseWriter) {
-	returnCh := make(chan interface{})
-	w.centralWorker.GetPaperStatusAction(paperId, returnCh)
-	paperStatus, isOkay := (<-returnCh).(common.PaperProcessingResult)
-	if !isOkay || paperStatus.Status == common.UnknownStatus {
-		writer.WriteHeader(http.StatusBadRequest)
-		errStr := fmt.Sprintf("Paper id %s is unkown.", paperStatus.Id)
-		log.Println(errStr)
-		if _, err := writer.Write([]byte(errStr)); err != nil {
-			log.Println("Writing to http response writer failed. Error:", err)
+	//returnCh := make(chan interface{})
+	//w.centralWorker.GetPaperStatusAction(paperId, returnCh)
+	//paperStatus, isOkay := (<-returnCh).(common.PaperProcessingResult)
+	//if !isOkay || paperStatus.Status == common.UnknownStatus {
+	//	writer.WriteHeader(http.StatusBadRequest)
+	//	errStr := fmt.Sprintf("Paper id %s is unkown.", paperStatus.Id)
+	//	log.Println(errStr)
+	//	if _, err := writer.Write([]byte(errStr)); err != nil {
+	//		log.Println("Writing to http response writer failed. Error:", err)
+	//	}
+	//	return
+	//}
+
+	var response common.AddPaperResponse
+	if reqCount > 3 {
+		response = common.AddPaperResponse{
+			ApiResponse: common.ApiResponse{
+				Status: common.Okay,
+			},
+			Id:         paperId,
+			Uniqueness: "100",
+			IpfsHash:   "test_hash",
+			Nft: common.NftMetadata{
+				Address:     "test_address",
+				Symbol:      "test_symbol",
+				Name:        "test_name",
+				Transaction: "test_transaction",
+				Image:       "iVBORw0KGgoAAAANSUhEUgAAAPoAAAD6CAQAAAAi5ZK2AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAAmJLR0QA",
+			},
+			NftRecoveryPhrase: "test_phrase",
 		}
-		return
+	} else {
+		response = common.AddPaperResponse{
+			ApiResponse: common.ApiResponse{
+				Status: common.Processing,
+			},
+			Id: paperId,
+		}
 	}
 
-	paperStatusJson, err := json.Marshal(paperStatus)
+	paperStatusJson, err := json.Marshal(response)
 	if err != nil {
 		errStr := fmt.Sprintf("session status json marshal failed. Error: %s", err)
 		log.Println(errStr)
@@ -119,11 +144,12 @@ func (w *WebUIProcessor) checkPaperStatus(paperId string, writer http.ResponseWr
 		return
 	}
 	writer.Header().Set("Content-Type", "application/json")
-	if paperStatus.Status == common.SuccessStatus {
-		writer.WriteHeader(http.StatusOK)
-	} else {
-		writer.WriteHeader(http.StatusAccepted)
-	}
+	writer.WriteHeader(http.StatusOK)
+	//if paperStatus.Status == common.ProcessedStatus {
+	//	writer.WriteHeader(http.StatusOK)
+	//} else {
+	//	writer.WriteHeader(http.StatusAccepted)
+	//}
 	if _, err = writer.Write(paperStatusJson); err != nil {
 		log.Println("Writing to http response writer failed. Error:", err)
 	}

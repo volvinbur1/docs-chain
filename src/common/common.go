@@ -12,7 +12,7 @@ var CloserHandler = func(closer io.Closer) {
 }
 
 const (
-	LocalStoragePath = "nebin/storage"
+	LocalStoragePath = "bin/storage"
 	PaperPdfFileName = "paper.pdf"
 )
 
@@ -33,14 +33,54 @@ type AnalysisResult struct {
 }
 
 type PaperMetadata struct {
-	Id               string   `json:"id" bson:"id"`
-	Topic            string   `json:"topic" bson:"topic"`
-	UploadDate       string   `json:"uploadDate" bson:"uploadDate"`
-	Authors          []Author `json:"authors" bson:"authors"`
-	PaperIpfsHash    string   `json:"paperIpfsHash,omitempty" bson:"paperIpfsHash,omitempty"`
-	ReviewRating     string   `json:"reviewRating,omitempty" bson:"reviewRating,omitempty"`
-	PaperUniqueness  string   `json:"paperUniqueness,omitempty" bson:"paperUniqueness,omitempty"`
-	SimilarPapersNfr []string `json:"similarPapersNfr,omitempty" bson:"similarPapersNfr,omitempty"`
+	Topic            string   `json:"topic"`
+	Description      string   `json:"description"`
+	Authors          []Author `json:"authors"`
+	UploadDate       string   `json:"uploadDate"`
+	Uniqueness       string   `json:"uniqueness"`
+	IpfsHash         string   `json:"ipfsHash,omitempty"`
+	SimilarPapersNft []string `json:"similarPapersNft,omitempty"`
+}
+
+type NftMetadata struct {
+	Address     string `json:"address"`
+	Symbol      string `json:"symbol"`
+	Name        string `json:"name"`
+	Transaction string `json:"transaction"`
+	Image       string `json:"image"`
+}
+
+const (
+	Okay          = "okay"
+	Processing    = "processing"
+	Failed        = "failed"
+	NoResults     = "noResults"
+	LowUniqueness = "lowUniqueness"
+)
+
+type ApiResponse struct {
+	Status  string `json:"state"`
+	Message string `json:"message"`
+}
+
+type AddPaperResponse struct {
+	ApiResponse
+	Id                string      `json:"id"`
+	Uniqueness        string      `json:"uniqueness"`
+	IpfsHash          string      `json:"ipfsHash"`
+	Nft               NftMetadata `json:"nft"`
+	NftRecoveryPhrase string      `json:"nftRecoveryPhrase"`
+}
+
+type GetPaperResponse struct {
+	ApiResponse
+	Metadata PaperMetadata `json:"metadata"`
+}
+
+type SearchForPaperResponse struct {
+	ApiResponse
+	NftMetadata   []NftMetadata
+	PaperMetadata []NftMetadata
 }
 
 type Author struct {
@@ -60,16 +100,10 @@ const (
 	UnknownStatus = iota
 	ProcessingFailedStatus
 	NotEnoughUniquenessStatus
-	IsReadyForProcessingStatus
+	ReadyForProcessingStatus
 	InProgressStatus
-	SuccessStatus
+	ProcessedStatus
 )
-
-type PaperProcessingResult struct {
-	Id     string `json:"id"`
-	Status int    `json:"status"`
-	NFT    string `json:"NFT"`
-}
 
 type ServiceAction = int
 

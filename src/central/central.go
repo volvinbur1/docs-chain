@@ -64,7 +64,7 @@ func (w *Worker) NewPaperAction(newPaper common.UploadedPaper) {
 		Action:  common.NewPaperUploadAction,
 		Payload: newPaper,
 	}
-	w.processingPapersStatus.Store(newPaper.Id, common.IsReadyForProcessingStatus)
+	w.processingPapersStatus.Store(newPaper.Id, common.ReadyForProcessingStatus)
 	log.Printf("New paper added to processing queue. Paper id: %s", newPaper.Id)
 }
 
@@ -77,18 +77,18 @@ func (w *Worker) GetPaperStatusAction(paperId string, returnCh chan<- interface{
 }
 
 func (w *Worker) handlePaperStatusRequest(paperId string, returnCh chan<- interface{}) {
-	res := common.PaperProcessingResult{
-		Id:  paperId,
-		NFT: "test_nft", //TODO: replace; this one just for tests
-	}
-	status, exist := w.processingPapersStatus.Load(paperId)
-	if !exist {
-		res.Status = common.UnknownStatus
-	} else {
-		res.Status = status.(int)
-	}
-
-	returnCh <- res
+	//res := common.PaperProcessingResult{
+	//	Id:  paperId,
+	//	NFT: "test_nft", //TODO: replace; this one just for tests
+	//}
+	//status, exist := w.processingPapersStatus.Load(paperId)
+	//if !exist {
+	//	res.Status = common.UnknownStatus
+	//} else {
+	//	res.Status = status.(int)
+	//}
+	//
+	//returnCh <- res
 }
 
 func (w *Worker) handleNewPaperUpload(newPaper common.UploadedPaper) {
@@ -114,7 +114,7 @@ func (w *Worker) handleNewPaperUpload(newPaper common.UploadedPaper) {
 		w.processingPapersStatus.Store(newPaper.Id, common.ProcessingFailedStatus)
 		return
 	}
-	w.processingPapersStatus.Store(newPaper.Id, common.SuccessStatus)
+	w.processingPapersStatus.Store(newPaper.Id, common.ProcessedStatus)
 }
 
 func (w *Worker) analyzePaperPdf(newPaper common.UploadedPaper) (common.AnalysisResult, error) {
@@ -159,13 +159,13 @@ func (w *Worker) createPaperQrCode(newPaper common.UploadedPaper, analysisResult
 	}
 
 	paperMetadata := common.PaperMetadata{
-		Id:               newPaper.Id,
+		//Id:               newPaper.Id,
 		Topic:            newPaper.Topic,
 		UploadDate:       time.Now().Format(time.RFC850),
 		Authors:          newPaper.Authors,
-		PaperIpfsHash:    ipfsCid,
-		PaperUniqueness:  fmt.Sprintf("%.2f", analysisResult.Uniqueness),
-		SimilarPapersNfr: similarPapersNft,
+		IpfsHash:         ipfsCid,
+		Uniqueness:       fmt.Sprintf("%.2f", analysisResult.Uniqueness),
+		SimilarPapersNft: similarPapersNft,
 	}
 	if err = w.dbManager.AddNewPaper(paperMetadata); err != nil {
 		return "", err
