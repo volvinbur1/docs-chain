@@ -28,6 +28,8 @@ func NewWebUIProcessor(centralWorker *central.Worker) *WebUIProcessor {
 
 	http.HandleFunc(addPaperEndpoint, processor.HandleAddPaperRequest)
 	http.HandleFunc(getPaperStatusEndpoint, processor.HandleGetPaperStatusRequest)
+	http.HandleFunc(getPaperInfoEndpoint, processor.HandleGetPaperInfoRequest)
+	http.HandleFunc(searchForPaperEndpoint, processor.HandleSearchForPaperRequest)
 	return processor
 }
 
@@ -54,6 +56,117 @@ func (w *WebUIProcessor) HandleGetPaperStatusRequest(writer http.ResponseWriter,
 		paperId := request.URL.Query().Get(paperIdKey)
 		log.Println("New get paper status request. Paper id:", paperId)
 		w.checkPaperStatus(paperId, writer)
+	default:
+		http.Error(writer, fmt.Sprintf("Http is method %s is not supported", request.Method), http.StatusNotImplemented)
+	}
+}
+
+func (w *WebUIProcessor) HandleGetPaperInfoRequest(writer http.ResponseWriter, request *http.Request) {
+	switch request.Method {
+	case http.MethodGet:
+		paperNft := request.URL.Query().Get(paperNftKey)
+		log.Println("New get paper info request. Paper nft:", paperNft)
+		response := common.GetPaperResponse{
+			ApiResponse: common.ApiResponse{
+				Status: common.Okay,
+			},
+			Nft: paperNft,
+			Metadata: common.PaperMetadata{
+				Topic:       "test_topic",
+				Description: "test_description",
+				Authors: []common.Author{{
+					Name:          "test_name",
+					Surname:       "test_surname",
+					ScienceDegree: "test_degree",
+				}},
+				UploadDate: "test_update_date",
+				Uniqueness: "test_uniqueness",
+				IpfsHash:   "test_ipfs_hash",
+			},
+		}
+
+		paperStatusJson, err := json.Marshal(response)
+		if err != nil {
+			errStr := fmt.Sprintf("session status json marshal failed. Error: %s", err)
+			log.Println(errStr)
+			http.Error(writer, errStr, http.StatusInternalServerError)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json")
+		writer.WriteHeader(http.StatusOK)
+		if _, err = writer.Write(paperStatusJson); err != nil {
+			log.Println("Writing to http response writer failed. Error:", err)
+		}
+	default:
+		http.Error(writer, fmt.Sprintf("Http is method %s is not supported", request.Method), http.StatusNotImplemented)
+	}
+}
+
+func (w *WebUIProcessor) HandleSearchForPaperRequest(writer http.ResponseWriter, request *http.Request) {
+	switch request.Method {
+	case http.MethodGet:
+		payload := request.URL.Query().Get(searchPayloadKey)
+		log.Println("New search for paper request. Search payload:", payload)
+		response := common.SearchForPaperResponse{
+			ApiResponse: common.ApiResponse{
+				Status: common.Okay,
+			},
+			Payload: payload,
+
+			NftMetadata: []common.NftMetadata{
+				{
+					Address:     "test_address",
+					Symbol:      "test_symbol",
+					Name:        "test_name",
+					Transaction: "test_transaction",
+				},
+				{
+					Address:     "test_address",
+					Symbol:      "test_symbol",
+					Name:        "test_name",
+					Transaction: "test_transaction",
+				},
+			},
+			PaperMetadata: []common.PaperMetadata{
+				{
+					Topic:       "test_topic",
+					Description: "test_description",
+					Authors: []common.Author{{
+						Name:          "test_name",
+						Surname:       "test_surname",
+						ScienceDegree: "test_degree",
+					}},
+					UploadDate: "test_update_date",
+					Uniqueness: "test_uniqueness",
+					IpfsHash:   "test_ipfs_hash",
+				},
+				{
+					Topic:       "test_topic",
+					Description: "test_description",
+					Authors: []common.Author{{
+						Name:          "test_name",
+						Surname:       "test_surname",
+						ScienceDegree: "test_degree",
+					}},
+					UploadDate: "test_update_date",
+					Uniqueness: "test_uniqueness",
+					IpfsHash:   "test_ipfs_hash",
+				},
+			},
+		}
+
+		paperStatusJson, err := json.Marshal(response)
+		if err != nil {
+			errStr := fmt.Sprintf("session status json marshal failed. Error: %s", err)
+			log.Println(errStr)
+			http.Error(writer, errStr, http.StatusInternalServerError)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json")
+		writer.WriteHeader(http.StatusOK)
+		if _, err = writer.Write(paperStatusJson); err != nil {
+			log.Println("Writing to http response writer failed. Error:", err)
+		}
 	default:
 		http.Error(writer, fmt.Sprintf("Http is method %s is not supported", request.Method), http.StatusNotImplemented)
 	}

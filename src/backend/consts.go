@@ -5,7 +5,7 @@ const (
 	addPaperEndpoint       = apiBaseEndpoint + "/addPaper"
 	getPaperStatusEndpoint = apiBaseEndpoint + "/getPaperStatus"
 	getPaperInfoEndpoint   = apiBaseEndpoint + "/getPaperInfo"
-	searchForPaperEndpoint = addPaperEndpoint + "/searchForPaper"
+	searchForPaperEndpoint = apiBaseEndpoint + "/searchForPaper"
 )
 
 const (

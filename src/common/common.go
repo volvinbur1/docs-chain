@@ -60,27 +60,30 @@ const (
 
 type ApiResponse struct {
 	Status  string `json:"state"`
-	Message string `json:"message"`
+	Message string `json:"message,omitempty"`
 }
 
 type AddPaperResponse struct {
 	ApiResponse
 	Id                string      `json:"id"`
-	Uniqueness        string      `json:"uniqueness"`
-	IpfsHash          string      `json:"ipfsHash"`
-	Nft               NftMetadata `json:"nft"`
-	NftRecoveryPhrase string      `json:"nftRecoveryPhrase"`
+	Uniqueness        string      `json:"uniqueness,omitempty"`
+	IpfsHash          string      `json:"ipfsHash,omitempty"`
+	SimilarPapersNft  []string    `json:"similarPapersNft,omitempty"`
+	Nft               NftMetadata `json:"nft,omitempty"`
+	NftRecoveryPhrase string      `json:"nftRecoveryPhrase,omitempty"`
 }
 
 type GetPaperResponse struct {
 	ApiResponse
-	Metadata PaperMetadata `json:"metadata"`
+	Nft      string        `json:"nft"`
+	Metadata PaperMetadata `json:"metadata,omitempty"`
 }
 
 type SearchForPaperResponse struct {
 	ApiResponse
-	NftMetadata   []NftMetadata
-	PaperMetadata []NftMetadata
+	Payload       string          `json:"payload"`
+	NftMetadata   []NftMetadata   `json:"nftMetadata,omitempty"`
+	PaperMetadata []PaperMetadata `json:"paperMetadata,omitempty"`
 }
 
 type Author struct {
