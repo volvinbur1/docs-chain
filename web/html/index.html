@@ -4,82 +4,97 @@
     <meta charset="UTF-8">
     <title>DocsChain</title>
     <link rel="stylesheet" href="../static/css/index.css">
+    <link id="u-theme-google-font" rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,100i,300,300i,400,400i,500,500i,700,700i,900,900i|Open+Sans:300,300i,400,400i,500,500i,600,600i,700,700i,800,800i">
 </head>
 <body>
-<div id="buttonsContainer" class="buttonsContainer">
-    <button id="addPaperFormButton" class="addPaperFormButton" type="button" onclick="showAppPaperForm()">Add new file</button>
-    <button id="getPaperFormButton" class="getPaperFormButton" type="button" onclick="showGetPaperForm()">Get file</button>
-    <button id="searchForPaperFormButton" class="searchForPaperFormButton" type="button" onclick="showSearchForPaperForm()">Search for file</button>
-</div>
+    <div class="flex-container">
+        <div class="main-flex-text">
+                <a class="main-text">Make your file safe with us</a>
+        </div>
+        <div class = "flex-buttons">
+            <div>
+                <button id="addPaperFormButton" class="addPaperFormButton" type="button" onclick="showAppPaperForm()"><img class="add-icon" src="../static/images/2.png" alt=""></button>
+                <p>Add image</p>
+                <a>Add your research paper to safe and non-removable system.</a>
+            </div>
+            <div>
+                <button id="getPaperFormButton" class="getPaperFormButton" type="button" onclick="showGetPaperForm()"><img class="get-icon" src="../static/images/3.png" alt=""> </button>
+                <p>Get image</p>
+                <a>You can receive your file back whenever you want.</a>
+
+            </div>
+            <div>
+                <button id="searchForPaperFormButton" class="searchForPaperFormButton" type="button" onclick="showSearchForPaperForm()"> <img class="search-icon" src="../static/images/4.png" alt=""></button>
+                <p>Search image</p>
+                <a>Do you need to find some work in our system?<br>
+                    Do it in a few clicks! </a>
+            </div>
+        </div>
+    </div>
+
 
 <div id="appPaperFormContainer" class="addPaperFormContainer" style="display: none;">
     <div id="paperUploadView" class="paperUploadView" style="display: none;">
         <form id="uploadForm">
-            <p>
+            <div>
+                <button class="closeAddPaperFormButton" type="button" onclick="hideAppPaperForm()"> </button>
+            </div>
+            <div class="paperUploadDiv">
                 <label for="paperFile">Upload your paper file:</label>
-                <input type="file" id="paperFile" accept="application/pdf">
-            </p>
-            <p>
-                <label for="paperTopic">Enter paper topic:</label>
-                <input type="text" id="paperTopic">
-            </p>
-            <p>
+                <input type="file" class="fileUploadInput" id="paperFile" accept="application/pdf" required>
+            </div>
+            <div class="paperUploadDiv">
+                <label for="paperTopic">Enter paper topic:<br></label>
+                <input type="text" id="paperTopic" required>
+            </div>
+            <div class="paperUploadDiv">
                 <label for="paperDescription">Enter short paper description:</label>
-                <input type="text" id="paperDescription">
-            </p>
+                <input type="text" id="paperDescription" required>
+            </div>
 
             <button id="addAuthorButton" onclick="addAuthor()">+</button>
             <label id="nameLabel">Enter author name:</label>
-            <div id="nameDiv"></div>
+            <div id="nameDiv" class="paperUploadDiv"></div>
 
             <label id="surnameLabel">Enter author surname:</label>
-            <div id="surnameDiv"></div>
+            <div id="surnameDiv" class="paperUploadDiv"></div>
 
             <label id="degreeLabel">Enter author science degree:</label>
-            <div id="degreeDiv"></div>
+            <div id="degreeDiv" class="paperUploadDiv"></div>
             <button id="paperUploadButton" class="paperUploadButton" type="submit">Upload</button>
         </form>
     </div>
 
-    <div id="loadingView" class="loadingView" style="display: none;">
-        <div class="loadingIndicator"></div>
-        Please wait while the server finishes processing.
-        <br>
-        It might take up to 10 minutes.
-        <br>
-        <b>Do not close this tab</b>
-    </div>
-
-    <div id="addPaperResultView" class="addPaperResultView" style="display: none;"></div>
+    <div id="addPaperResultView" class="ResultView" style="display: none;"></div>
 </div>
 
 <div id="getPaperFormContainer" class="getPaperFormContainer" style="display: none;">
+    <button class="closeGetPaperButton"  type="button" onclick="hideGetPaperForm()"></button>
     <div id="paperNftEnterView" class="paperNftEnterView" style="display: none;">
         <p>
             <label for="getNftText">Enter paper to load it:</label>
-            <input id="getNftText" name="getNftText" type="text" placeholder="paper nft">
+            <input id="getNftText" name="getNftText" type="text" placeholder="paper nft" required>
         </p>
     </div>
 
-    <div id="loadingView" class="loadingView" style="display: none;">
-        <div class="loadingIndicator"></div>
-        Please wait while the server finishes processing.
-        <br>
-        It might take up to 10 minutes.
-        <br>
-        <b>Do not close this tab</b>
-    </div>
 
-    <div id="getPaperResultView" class="getPaperResultView" style="display: none;"></div>
+
+    <div id="getPaperResultView" class="ResultView" style="display: none;"></div>
 </div>
 
 <div id="searchForPaperFormContainer" class="searchForPaperFormContainer" style="display: none;">
+    <button class="closeSearchPaperButton"  type="button" onclick="hideSearchPaperForm()"></button>
     <div id="searchTextEnterView" class="searchTextEnterView" style="display: none;">
         <p>
             <label for="searchText">Enter text to search for paper:</label>
-            <input id="searchText" name="searchText" type="text" placeholder="topic, author, ipfs hash">
+            <input id="searchText" class="searchTextInput" name="searchText" type="text" placeholder="topic, author, ipfs hash" required>
         </p>
     </div>
+
+
+    <div id="searchForPaperResultView" class="ResultView" style="display: none;"></div>
+
+</div>
 
     <div id="loadingView" class="loadingView" style="display: none;">
         <div class="loadingIndicator"></div>
@@ -89,11 +104,6 @@
         <br>
         <b>Do not close this tab</b>
     </div>
-
-    <div id="searchForPaperResultView" class="searchForPaperResultView" style="display: none;"></div>
-
-</div>
-
 
 <script src="../static/js/index.js"></script>
 </body>

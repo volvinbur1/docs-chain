@@ -42,9 +42,9 @@ function generateAuthorFields() {
     degreeDiv.setAttribute('for', '')
 
     for (let i = 1; i <= authorsCnt; i++) {
-        nameDiv.innerHTML+= `<input type="text" id="${authorNameBaseId+i}">`
-        surnameDiv.innerHTML+= `<input type="text" id="${authorSurnameBaseId+i}"">`
-        degreeDiv.innerHTML+= `<input type="text" id="${authorDegreeBaseId+i}"">`
+        nameDiv.innerHTML+= `<input type="text" placeholder="Enter ${i} name" id="${authorNameBaseId+i} required">`
+        surnameDiv.innerHTML+= `<input type="text"placeholder="Enter ${i} surname" id="${authorSurnameBaseId+i}" required">`
+        degreeDiv.innerHTML+= `<input class="degreeInput" type="text" placeholder="Enter ${i} degree" id="${authorDegreeBaseId+i}" required">`
 
         nameLabel.setAttribute('for', nameLabel.getAttribute('for') + `${authorNameBaseId+i} `)
         surnameDiv.setAttribute('for', surnameLabel.getAttribute('for') + `${authorSurnameBaseId+i} `)
@@ -78,6 +78,10 @@ function showAppPaperForm() {
     generateAuthorFields()
 }
 
+function hideAppPaperForm(){
+    document.getElementById('appPaperFormContainer').style.display = displayStyleHide;
+}
+
 function showGetPaperForm() {
     console.log("Show get paper form")
 
@@ -90,6 +94,11 @@ function showGetPaperForm() {
     document.getElementById('getPaperResultView').style.display = displayStyleHide;
 }
 
+function hideGetPaperForm(){
+    document.getElementById('getPaperFormContainer').style.display = displayStyleHide;
+
+}
+
 function showSearchForPaperForm() {
     console.log("Show search for paper form")
 
@@ -100,6 +109,11 @@ function showSearchForPaperForm() {
     document.getElementById('searchTextEnterView').style.display = displayStyleShow;
     document.getElementById('loadingView').style.display = displayStyleHide;
     document.getElementById('searchForPaperResultView').style.display = displayStyleHide;
+}
+
+function hideSearchPaperForm(){
+    document.getElementById('searchForPaperFormContainer').style.display = displayStyleHide;
+
 }
 
 async function checkPaperStatus(response) {

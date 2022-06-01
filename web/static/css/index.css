@@ -11,3 +11,148 @@
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
+
+html{
+    background-image: url("orion_star_bg.jpg");
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+
+}
+.flex-container{
+    display: flex;
+    flex-direction: column;
+    height: 50px;
+    opacity: 100%;
+
+    padding-top: 100px;
+    gap: 100px;
+
+}
+.main-flex-text{
+    display: flex;
+    height: 300px;
+    justify-content: center;
+    opacity: 100%;
+}
+.main-text{
+    color: #f3f3f3;
+    font-size: 70px;
+    font-weight: bold;
+}
+
+.flex-buttons{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 100px;
+    height: 300px;
+    opacity: 100%;
+    flex-wrap: wrap;
+    /*padding-top: 400px;*/
+}
+
+.flex-buttons > div{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 300px;
+}
+.flex-buttons > div > p {
+    color: #e0545c;
+    font-size: 40px;
+
+}
+
+.flex-buttons > div > a{
+    color: #f3f3f3;
+    font-size: 20px;
+
+}
+
+.flex-buttons > div > button{
+    height: 120px;
+    width: 120px;
+    border-radius: 50%;
+    background: #e0545c;
+    cursor : pointer;
+}
+
+
+
+.add-icon{
+    height: 70px;
+    width: 70px;
+    background-image: none;
+    margin: 0 auto;
+}
+
+.get-icon{
+    height: 70px;
+    width: 70px;
+    background-image: none;
+    margin: 0 auto;
+}
+
+
+.search-icon{
+    height: 70px;
+    width: 70px;
+    background-image: none;
+    margin: 0 auto;
+}
+/*.addPaperFormContainer{*/
+/*    position: relative;*/
+/*    text-align: center;*/
+/*    width: 100%;*/
+/*}*/
+
+.paperUploadDiv{
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.searchTextInput{
+    margin-top: 10px;
+}
+
+.fileUploadInput{
+    margin-top: 10px;
+}
+
+.paperUploadView, .getPaperFormContainer, .searchForPaperFormContainer, .ResultView, .loadingView{
+
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 400px;
+    padding: 40px;
+    transform: translate(-50%, -50%);
+    background: rgb(255, 255, 255);
+    box-sizing: border-box;
+    box-shadow: 0 15px 25px rgb(255, 255, 255);
+    border-radius: 10px;
+
+}
+
+
+.closeAddPaperFormButton, .closeGetPaperButton, .closeSearchPaperButton{
+    position: absolute;
+    top: -15px;
+    right: -15px;
+    background-color: white;
+    width: 45px;
+    height: 45px;
+    display: grid;
+    place-items: center;
+    font-size: 1.7rem;
+    color: #2E4052;
+    border-radius: 50%;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.164);
+    cursor: pointer;
+    background-image: url("close_logo.png");
+    background-size: 41.5px 41.5px;
+}
+
