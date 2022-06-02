@@ -42,9 +42,9 @@ function generateAuthorFields() {
     degreeDiv.setAttribute('for', '')
 
     for (let i = 1; i <= authorsCnt; i++) {
-        nameDiv.innerHTML+= `<input type="text" placeholder="Enter ${i} name" id="${authorNameBaseId+i} required">`
-        surnameDiv.innerHTML+= `<input type="text"placeholder="Enter ${i} surname" id="${authorSurnameBaseId+i}" required">`
-        degreeDiv.innerHTML+= `<input class="degreeInput" type="text" placeholder="Enter ${i} degree" id="${authorDegreeBaseId+i}" required">`
+        nameDiv.innerHTML+= `<input type="text" placeholder="Enter ${i} name" id="${authorNameBaseId+i}" required">`
+        surnameDiv.innerHTML+= `<input type="text" placeholder="Enter ${i} surname" id="${authorSurnameBaseId+i}" required">`
+        degreeDiv.innerHTML+= `<input type="text" placeholder="Enter ${i} degree" id="${authorDegreeBaseId+i}" required">`
 
         nameLabel.setAttribute('for', nameLabel.getAttribute('for') + `${authorNameBaseId+i} `)
         surnameDiv.setAttribute('for', surnameLabel.getAttribute('for') + `${authorSurnameBaseId+i} `)
@@ -81,6 +81,9 @@ function showAppPaperForm() {
 function hideAppPaperForm(){
     document.getElementById('appPaperFormContainer').style.display = displayStyleHide;
 }
+function hideAddResultView(){
+    document.getElementById('addResultDiv').style.display = displayStyleHide;
+}
 
 function showGetPaperForm() {
     console.log("Show get paper form")
@@ -96,6 +99,11 @@ function showGetPaperForm() {
 
 function hideGetPaperForm(){
     document.getElementById('getPaperFormContainer').style.display = displayStyleHide;
+
+}
+
+function hideGetResultView(){
+    document.getElementById('getResultDiv').style.display = displayStyleHide;
 
 }
 
@@ -115,8 +123,12 @@ function hideSearchPaperForm(){
     document.getElementById('searchForPaperFormContainer').style.display = displayStyleHide;
 
 }
+function hideSearchResultView(){
+    document.getElementById('searchResultDiv').style.display = displayStyleHide;
+}
 
 async function checkPaperStatus(response) {
+    hideAppPaperForm()
     document.getElementById('paperUploadView').style.display = displayStyleShow;
     document.getElementById('loadingView').style.display = displayStyleShow;
     document.getElementById('addPaperResultView').style.display = displayStyleHide;
@@ -136,12 +148,15 @@ async function checkPaperStatus(response) {
 function handleAddPaperResult(response) {
     document.getElementById('paperUploadView').style.display = displayStyleShow;
     document.getElementById('loadingView').style.display = displayStyleHide;
-    document.getElementById('addPaperResultView').style.display = displayStyleShow;
+    document.getElementById('addResultDiv').style.display = displayStyleShow;
 
     console.log(`paper ${response['id']} upload finished`)
     switch (response['state']) {
         case okayState:
             showUploadSuccessText(response)
+
+            document.getElementById('addPaperResultView').style.display = displayStyleShow;
+
             break
         //TODO: add handling for other states
         default:
@@ -178,14 +193,15 @@ function addPaperResponseHandler(http) {
         }
     }
 }
-
-document.getElementById('uploadForm').addEventListener('submit', function (event) {
+let uploadForm = document.getElementById('uploadForm');
+uploadForm.addEventListener('submit', function (event) {
     event.preventDefault()
 
     let http = new XMLHttpRequest();
-    http.addEventListener('load', function () {console.log('Data sent and response loaded')});
+    http.addEventListener('load', function () {console.log('Data sent and response loaded')
+    uploadForm.reset()
+    });
     http.addEventListener('error', function () {console.log('Sending data failed')});
-
     http.onreadystatechange = function () {
         addPaperResponseHandler(http)
     }
@@ -209,7 +225,7 @@ document.getElementById('uploadForm').addEventListener('submit', function (event
 function handleGetPaperInfoResult(response) {
     document.getElementById('paperNftEnterView').style.display = displayStyleShow;
     document.getElementById('loadingView').style.display = displayStyleHide;
-    document.getElementById('getPaperResultView').style.display = displayStyleShow;
+    document.getElementById('getResultDiv').style.display = displayStyleShow;
 
     switch (response['state']) {
         case okayState:
@@ -222,6 +238,9 @@ function handleGetPaperInfoResult(response) {
                 `<br><label id="resultDegree">Author science degree: ${response['metadata']['authors'][0]['scienceDegree']}</label>` +
                 `<br><label id="resultUniqueness">Uniqueness: ${response['metadata']['uniqueness']}</label>` +
                 `<br><label id="resultIpfsHash">Ipfs hash: ${response['metadata']['ipfsHash']}</label>`
+            hideGetPaperForm()
+            document.getElementById('getPaperResultView').style.display = displayStyleShow;
+
             break
         //TODO: add handling for other states
         default:
@@ -229,8 +248,8 @@ function handleGetPaperInfoResult(response) {
             showError(response, 'addPaperResultView')
     }
 }
-
-document.getElementById('getNftText').addEventListener('keydown', function (event) {
+let getNftText = document.getElementById('getNftText');
+getNftText.addEventListener('keydown', function (event) {
     if (event.key === 'Enter') {
         document.getElementById('paperNftEnterView').style.display = displayStyleShow;
         document.getElementById('loadingView').style.display = displayStyleShow;
@@ -253,13 +272,14 @@ document.getElementById('getNftText').addEventListener('keydown', function (even
             `${getPaperInfoEndpoint}?${paperNftKey}=${document.getElementById('getNftText').value}`, true);
         http.send(null);
         console.log('get paper info request was sent')
+        getNftText.value = '';
     }
 })
 
 function handleSearchForPaperResult(response) {
     document.getElementById('searchTextEnterView').style.display = displayStyleShow;
     document.getElementById('loadingView').style.display = displayStyleHide;
-    document.getElementById('searchForPaperResultView').style.display = displayStyleShow;
+    document.getElementById('searchResultDiv').style.display = displayStyleShow;
 
     switch (response['state']) {
         case okayState:
@@ -281,6 +301,8 @@ function handleSearchForPaperResult(response) {
 
                 searchResultDiv.innerHTML += `<hr>`
             }
+            document.getElementById('searchForPaperResultView').style.display = displayStyleShow;
+            hideSearchPaperForm()
             break
         //TODO: add handling for other states
         default:
@@ -288,8 +310,8 @@ function handleSearchForPaperResult(response) {
             showError(response, 'addPaperResultView')
     }
 }
-
-document.getElementById('searchText').addEventListener('keydown', function (event) {
+let searchText = document.getElementById('searchText');
+searchText.addEventListener('keydown', function (event) {
     if (event.key === 'Enter') {
         document.getElementById('searchTextEnterView').style.display = displayStyleShow;
         document.getElementById('loadingView').style.display = displayStyleShow;
@@ -312,6 +334,7 @@ document.getElementById('searchText').addEventListener('keydown', function (even
             `${searchForPaperEndpoint}?${searchPayloadKey}=${document.getElementById('searchText').value}`, true);
         http.send(null);
         console.log('get paper info request was sent')
+        searchText.value = '';
     }
 })
 

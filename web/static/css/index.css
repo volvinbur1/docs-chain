@@ -138,7 +138,7 @@ html{
 }
 
 
-.closeAddPaperFormButton, .closeGetPaperButton, .closeSearchPaperButton{
+.closeAddPaperFormButton, .closeGetPaperButton, .closeSearchPaperButton, .closeAddResultViewButton, .closeGetResultViewButton, .closeSearchResultViewButton{
     position: absolute;
     top: -15px;
     right: -15px;

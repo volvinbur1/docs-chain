@@ -14,7 +14,7 @@
         <div class = "flex-buttons">
             <div>
                 <button id="addPaperFormButton" class="addPaperFormButton" type="button" onclick="showAppPaperForm()"><img class="add-icon" src="../static/images/2.png" alt=""></button>
-                <p>Add image</p>
+                <p>Add file</p>
                 <a>Add your research paper to safe and non-removable system.</a>
             </div>
             <div>
@@ -64,9 +64,11 @@
             <button id="paperUploadButton" class="paperUploadButton" type="submit">Upload</button>
         </form>
     </div>
-
-    <div id="addPaperResultView" class="ResultView" style="display: none;"></div>
 </div>
+    <div id="addResultDiv" class="ResultView" style="display: none;">
+        <button class="closeAddResultViewButton"  type="button" onclick="hideAddResultView()"></button>
+        <div id="addPaperResultView" ></div>
+    </div>
 
 <div id="getPaperFormContainer" class="getPaperFormContainer" style="display: none;">
     <button class="closeGetPaperButton"  type="button" onclick="hideGetPaperForm()"></button>
@@ -77,10 +79,12 @@
         </p>
     </div>
 
-
-
-    <div id="getPaperResultView" class="ResultView" style="display: none;"></div>
 </div>
+    <div id="getResultDiv" class="ResultView" style="display: none;">
+        <button class="closeGetResultViewButton"  type="button" onclick="hideGetResultView()"></button>
+        <div id="getPaperResultView" ></div>
+    </div>
+
 
 <div id="searchForPaperFormContainer" class="searchForPaperFormContainer" style="display: none;">
     <button class="closeSearchPaperButton"  type="button" onclick="hideSearchPaperForm()"></button>
@@ -91,11 +95,11 @@
         </p>
     </div>
 
-
-    <div id="searchForPaperResultView" class="ResultView" style="display: none;"></div>
-
 </div>
-
+    <div id="searchResultDiv" class="ResultView" style="display: none;">
+        <button class="closeSearchResultViewButton"  type="button" onclick="hideSearchResultView()"></button>
+        <div id="searchForPaperResultView"></div>
+    </div>
     <div id="loadingView" class="loadingView" style="display: none;">
         <div class="loadingIndicator"></div>
         Please wait while the server finishes processing.
