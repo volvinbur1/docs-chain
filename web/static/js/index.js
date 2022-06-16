@@ -42,8 +42,8 @@ function generateAuthorFields() {
     degreeDiv.setAttribute('for', '')
 
     for (let i = 1; i <= authorsCnt; i++) {
-        nameDiv.innerHTML+= `<input type="text" placeholder="Enter ${i} name" id="${authorNameBaseId+i} required">`
-        surnameDiv.innerHTML+= `<input type="text"placeholder="Enter ${i} surname" id="${authorSurnameBaseId+i}" required">`
+        nameDiv.innerHTML+= `<input type="text" placeholder="Enter ${i} name" id="${authorNameBaseId+i}" required">`
+        surnameDiv.innerHTML+= `<input type="text" placeholder="Enter ${i} surname" id="${authorSurnameBaseId+i}" required">`
         degreeDiv.innerHTML+= `<input class="degreeInput" type="text" placeholder="Enter ${i} degree" id="${authorDegreeBaseId+i}" required">`
 
         nameLabel.setAttribute('for', nameLabel.getAttribute('for') + `${authorNameBaseId+i} `)
@@ -215,13 +215,13 @@ function handleGetPaperInfoResult(response) {
         case okayState:
             document.getElementById('getPaperResultView').innerHTML =
                 `<h3>Paper data for NFT ${response['nft']}</h3>` +
-                `<label id="resultTopic">Topic: ${response['metadata']['topic']}</label>` +
-                `<br><label id="resultDescription">Description: ${response['metadata']['description']}</label>` +
-                `<br><label id="resultName">Author name: ${response['metadata']['authors'][0]['name']}</label>` +
-                `<br><label id="resultSurname">Author surname: ${response['metadata']['authors'][0]['surname']}</label>` +
-                `<br><label id="resultDegree">Author science degree: ${response['metadata']['authors'][0]['scienceDegree']}</label>` +
-                `<br><label id="resultUniqueness">Uniqueness: ${response['metadata']['uniqueness']}</label>` +
-                `<br><label id="resultIpfsHash">Ipfs hash: ${response['metadata']['ipfsHash']}</label>`
+                `<label id="resultTopic"><b>Topic</b>: ${response['metadata']['topic']}</label>` +
+                `<br><label id="resultDescription"><b>Description</b>: ${response['metadata']['description']}</label>` +
+                `<br><label id="resultName"><b>Author name</b>: ${response['metadata']['authors'][0]['name']}</label>` +
+                `<br><label id="resultSurname"><b>Author surname</b>: ${response['metadata']['authors'][0]['surname']}</label>` +
+                `<br><label id="resultDegree"><b>Author science degree</b>: ${response['metadata']['authors'][0]['scienceDegree']}</label>` +
+                `<br><label id="resultUniqueness"><b>Uniqueness</b>: ${response['metadata']['uniqueness']}</label>` +
+                `<br><label id="resultIpfsHash"><b>Ipfs hash</b>: <a href="${response['metadata']['ipfsHash']}">Your paper at IPFS</a></label>`
             break
         //TODO: add handling for other states
         default:
@@ -268,16 +268,16 @@ function handleSearchForPaperResult(response) {
 
             for (let i = 0; i < Math.min(response['nftMetadata'].length, response['paperMetadata'].length); i++) {
                 searchResultDiv.innerHTML +=
-                    `<label id="resultNftAddress">Your NFT: ${response['nftMetadata'][i]['address']}</label>` +
-                    `<br><label id="resultNftSymbol">Your NFT symbol: ${response['nftMetadata'][i]['symbol']}</label>` +
-                    `<br><label id="resultNftName">Your genearted NFT: ${response['nftMetadata'][i]['name']}</label>` +
-                    `<br><label id="resultTopic">Topic: ${response['paperMetadata'][i]['topic']}</label>` +
-                    `<br><label id="resultDescription">Description: ${response['paperMetadata'][i]['description']}</label>` +
-                    `<br><label id="resultName">Author name: ${response['paperMetadata'][i]['authors'][0]['name']}</label>` +
-                    `<br><label id="resultSurname">Author surname: ${response['paperMetadata'][i]['authors'][0]['surname']}</label>` +
-                    `<br><label id="resultDegree">Author science degree: ${response['paperMetadata'][i]['authors'][0]['scienceDegree']}</label>` +
-                    `<br><label id="resultUniqueness">Uniqueness: ${response['paperMetadata'][i]['uniqueness']}</label>` +
-                    `<br><label id="resultIpfsHash">Ipfs hash: ${response['paperMetadata'][i]['ipfsHash']}</label>`
+                    `<label id="resultNftAddress"><b>Your NFT:</b> ${response['nftMetadata'][i]['address']}</label>` +
+                    `<br><label id="resultNftSymbol"><b>Your NFT symbol:</b> ${response['nftMetadata'][i]['symbol']}</label>` +
+                    `<br><label id="resultNftName"><b>Your genearted NFT:</b> ${response['nftMetadata'][i]['name']}</label>` +
+                    `<br><label id="resultTopic"><b>Topic:</b> ${response['paperMetadata'][i]['topic']}</label>` +
+                    `<br><label id="resultDescription"><b>Description:</b> ${response['paperMetadata'][i]['description']}</label>` +
+                    `<br><label id="resultName"><b>Author name:</b> ${response['paperMetadata'][i]['authors'][0]['name']}</label>` +
+                    `<br><label id="resultSurname"><b>Author surname:</b> ${response['paperMetadata'][i]['authors'][0]['surname']}</label>` +
+                    `<br><label id="resultDegree"><b>Author science degree:</b> ${response['paperMetadata'][i]['authors'][0]['scienceDegree']}</label>` +
+                    `<br><label id="resultUniqueness"><b>Uniqueness:</b> ${response['paperMetadata'][i]['uniqueness']}</label>` +
+                    `<br><label id="resultIpfsHash"><b>Ipfs hash:</b> <a href="${response['paperMetadata'][i]['ipfsHash']}">Your paper at IPFS</a></label>`
 
                 searchResultDiv.innerHTML += `<hr>`
             }
