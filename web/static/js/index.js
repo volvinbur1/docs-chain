@@ -154,11 +154,12 @@ function handleAddPaperResult(response) {
     switch (response['state']) {
         case okayState:
             showUploadSuccessText(response)
-
             document.getElementById('addPaperResultView').style.display = displayStyleShow;
-
             break
-        //TODO: add handling for other states
+        case lowUniquenessState:
+            notUniqueEnoughResponse(response)
+            document.getElementById('addPaperResultView').style.display = displayStyleShow;
+            break
         default:
             console.log(`State: ${response['state']}. Message:  with ${response['message']}`)
             showError(response, 'addPaperResultView')
@@ -168,13 +169,24 @@ function handleAddPaperResult(response) {
 function showUploadSuccessText(response) {
     document.getElementById('addPaperResultView').innerHTML =
         `<h3>Paper uploaded successfully</h3>` +
-        `<label id="resultNftAddress">Your NFT: ${response['nft']['address']}</label>` +
-        `<br><label id="resultNftSymbol">Your NFT symbol: ${response['nft']['symbol']}</label>` +
-        `<br><label id="resultNftName">Your genearted NFT: ${response['nft']['name']}</label>` +
-        `<br><label id="resultPaperUniqueness">Your paper uniqueness: ${response['uniqueness']}</label>` +
-        `<br><label id="resultPaperIpfsHash">Your paper ipfs hash: ${response['ipfsHash']}</label>` +
-        `<br><label id="resultPaperIpfsHash">Your nft recovery phrase: ${response['nftRecoveryPhrase']}</label>` +
-        `<br><img src="data:image/png;base64,${response['nft']['image']}" alt="Your nft image" />`
+        `<label id="resultNftAddress"><b>Your NFT:</b> ${response['nft']['address']}</label>` +
+        `<br><label id="resultNftSymbol"><b>Your NFT symbol:</b> ${response['nft']['symbol']}</label>` +
+        `<br><label id="resultNftName"><b>Your genearted NFT:</b> ${response['nft']['name']}</label>` +
+        `<br><label id="resultPaperUniqueness"><b>Your paper uniqueness:</b> ${response['uniqueness']}</label>` +
+        `<br><label id="resultPaperIpfsHash"><b>Your paper ipfs hash:</b> <a href="${response['ipfsHash']}">Your paper at IPFS</a></label>` +
+        `<br><label id="resultPaperIpfsHash"><b>Your nft recovery phrase:</b> ${response['nftRecoveryPhrase']}</label>`
+}
+
+function notUniqueEnoughResponse(response) {
+    let similarNftHtml = ""
+    response['similarPapersNft'].forEach(function(nft) {
+        similarNftHtml += `<br><a href="/api/v1${nft}">${nft}</a>`
+    })
+    document.getElementById('addPaperResultView').innerHTML =
+        `<h3>Paper uploaded failed</h3>` +
+        `<label id="resultMessage"><b>Message:</b> ${response['message']}</label>` +
+        `<br><label id="resultPaperUniqueness"><b>Paper uniqueness:</b> <p style="color:#ff0044">${response['uniqueness']}</p></label>` +
+        `<label id="similarPapersNft"><b>Similar papers NFT:</b> ${similarNftHtml}</label>`
 }
 
 function addPaperResponseHandler(http) {

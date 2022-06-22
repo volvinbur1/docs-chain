@@ -240,6 +240,16 @@ func (w *WebUIProcessor) checkPaperStatus(paperId string, writer http.ResponseWr
 			},
 			NftRecoveryPhrase: "fdEvyu6BVer34DFGwsa",
 		}
+
+		//response = common.AddPaperResponse{
+		//	ApiResponse: common.ApiResponse{
+		//		Status:  common.LowUniqueness,
+		//		Message: "Your uploaded paper is not unique enough",
+		//	},
+		//	Id:               paperId,
+		//	Uniqueness:       "34%",
+		//	SimilarPapersNft: []string{"100311587963", "506312321966", "935161325569"},
+		//}
 	} else {
 		response = common.AddPaperResponse{
 			ApiResponse: common.ApiResponse{
